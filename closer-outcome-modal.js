@@ -220,14 +220,14 @@
     }
     @keyframes bucFadeIn { from { opacity:0 } to { opacity:1 } }
     #buc-outcome-modal {
-      background: #fff; border-radius: 12px; width: 580px; max-width: 95vw;
+      background: #fff; border-radius: 12px; width: 600px; max-width: 95vw;
       max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
       animation: bucSlideUp 0.2s ease;
     }
     @keyframes bucSlideUp { from { transform: translateY(16px); opacity:0 } to { transform: translateY(0); opacity:1 } }
     #buc-outcome-modal .om-header {
-      padding: 20px 24px 16px; border-bottom: 1px solid #f0f0f0;
-      display: flex; align-items: center; gap: 10px;
+      padding: 20px 24px 14px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: flex-start; gap: 12px;
     }
     #buc-outcome-modal .om-close {
       margin-left: auto; background: none; border: none; cursor: pointer;
@@ -236,24 +236,18 @@
     }
     #buc-outcome-modal .om-close:hover { color: #374151; background: #f3f4f6; }
     #buc-outcome-modal .om-icon {
-      width: 36px; height: 36px; border-radius: 8px; background: #eff6ff;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 8px; background: #f0fdfa;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
     }
     #buc-outcome-modal .om-icon svg { width:18px; height:18px; }
     #buc-outcome-modal .om-header h2 { margin: 0; font-size: 16px; font-weight: 600; color: #111827; }
-    #buc-outcome-modal .om-header p { margin: 2px 0 0; font-size: 13px; color: #6b7280; }
+    #buc-outcome-modal .om-header p { margin: 3px 0 0; font-size: 13px; color: #0d9488; }
     #buc-outcome-modal .om-body { padding: 20px 24px; }
     #buc-outcome-modal .om-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     #buc-outcome-modal .om-field { display: flex; flex-direction: column; gap: 5px; }
     #buc-outcome-modal .om-field.full { grid-column: 1 / -1; }
-    #buc-outcome-modal .om-section {
-      grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: #9ca3af;
-      text-transform: uppercase; letter-spacing: 0.06em; padding-top: 6px;
-      border-top: 1px solid #f0f0f0; margin-top: 2px;
-    }
     #buc-outcome-modal .om-field label {
-      font-size: 12px; font-weight: 600; color: #374151;
-      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: 13px; font-weight: 500; color: #374151;
     }
     #buc-outcome-modal .om-field select,
     #buc-outcome-modal .om-field input,
@@ -266,26 +260,29 @@
     #buc-outcome-modal .om-field select:focus,
     #buc-outcome-modal .om-field input:focus,
     #buc-outcome-modal .om-field textarea:focus {
-      border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+      border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
     }
-    #buc-outcome-modal .om-field textarea { resize: vertical; min-height: 72px; }
+    #buc-outcome-modal .om-field input[readonly] {
+      background: #f9fafb; color: #6b7280; cursor: default;
+    }
+    #buc-outcome-modal .om-field textarea { resize: vertical; min-height: 80px; }
     #buc-outcome-modal .om-footer {
       padding: 16px 24px; border-top: 1px solid #f0f0f0;
       display: flex; justify-content: flex-end; gap: 10px;
     }
     #buc-outcome-modal .om-btn {
-      padding: 9px 20px; border-radius: 7px; font-size: 14px; font-weight: 600;
+      padding: 9px 22px; border-radius: 7px; font-size: 14px; font-weight: 600;
       cursor: pointer; border: none; transition: all 0.15s; font-family: inherit;
     }
-    #buc-outcome-modal .om-btn-primary { background: #3b82f6; color: #fff; }
-    #buc-outcome-modal .om-btn-primary:hover { background: #2563eb; }
-    #buc-outcome-modal .om-btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
-    #buc-outcome-modal .om-btn-skip { background: none; color: #6b7280; border: 1.5px solid #e5e7eb; }
-    #buc-outcome-modal .om-btn-skip:hover { background: #f9fafb; color: #374151; }
+    #buc-outcome-modal .om-btn-primary { background: #0d9488; color: #fff; }
+    #buc-outcome-modal .om-btn-primary:hover { background: #0f766e; }
+    #buc-outcome-modal .om-btn-primary:disabled { background: #5eead4; cursor: not-allowed; }
+    #buc-outcome-modal .om-btn-cancel { background: none; color: #374151; border: 1.5px solid #e5e7eb; }
+    #buc-outcome-modal .om-btn-cancel:hover { background: #f9fafb; }
     #buc-outcome-modal .om-loading {
-      padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe;
-      border-radius: 7px; color: #1e40af; font-size: 13px; font-weight: 500;
-      margin-bottom: 14px;
+      padding: 10px 14px; background: #f0fdfa; border: 1px solid #99f6e4;
+      border-radius: 7px; color: #0f766e; font-size: 13px; font-weight: 500;
+      margin-bottom: 16px;
     }
     #buc-outcome-modal .om-success {
       padding: 10px 14px; background: #ecfdf5; border: 1px solid #86efac;
@@ -299,14 +296,49 @@
     }
     .buc-log-btn {
       width: 100%; margin-top: 10px; padding: 7px 0;
-      background: #eff6ff; border: none; border-radius: 7px;
-      font-size: 13px; font-weight: 600; color: #1d4ed8;
+      background: #f0fdfa; border: none; border-radius: 7px;
+      font-size: 13px; font-weight: 600; color: #0f766e;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
       transition: background 0.15s;
     }
-    .buc-log-btn:hover { background: #dbeafe; }
+    .buc-log-btn:hover { background: #ccfbf1; }
   `;
   document.head.appendChild(style);
+
+  // ─── SCRAPE CONTACT INFO FROM GHL PAGE DOM ───────────────────────────────
+  function scrapeContactInfo() {
+    const info = { firstName: '', lastName: '', email: '', phone: '' };
+    // Try to grab the full contact name from heading or avatar label
+    const nameEl = document.querySelector(
+      'h1[class*="contact"], [class*="contact-name"], [data-testid="contact-name"], [class*="contactName"]'
+    );
+    if (nameEl) {
+      const parts = nameEl.textContent.trim().split(/\s+/);
+      info.firstName = parts[0] || '';
+      info.lastName  = parts.slice(1).join(' ') || '';
+    }
+    // Email
+    const emailEl = document.querySelector('a[href^="mailto:"], [class*="email"] a, [data-type="email"]');
+    if (emailEl) info.email = emailEl.textContent.trim() || emailEl.getAttribute('href')?.replace('mailto:','') || '';
+    // Phone
+    const phoneEl = document.querySelector('a[href^="tel:"], [class*="phone"] a, [data-type="phone"]');
+    if (phoneEl) info.phone = phoneEl.textContent.trim() || phoneEl.getAttribute('href')?.replace('tel:','') || '';
+    return info;
+  }
+
+  function formatApptDateTime(isoString) {
+    if (!isoString) return '';
+    // Parse directly from ISO string — avoid new Date() UTC conversion
+    const [datePart, timePart] = isoString.split('T');
+    if (!datePart) return '';
+    const [y, m, d] = datePart.split('-');
+    if (!timePart) return `${m}/${d}/${y}`;
+    const [hStr, minStr] = timePart.split(':');
+    const h = parseInt(hStr, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12  = ((h % 12) || 12);
+    return `${m}/${d}/${y} ${h12}:${minStr} ${ampm}`;
+  }
 
   // ─── BUILD MODAL HTML ─────────────────────────────────────────────────────
   function buildModal(subtitle, prefill = {}) {
@@ -314,85 +346,123 @@
       `<option${opt === val ? ' selected' : ''}>${opt}</option>`
     ).join('');
 
+    const closerOptions = ['Tim Coulter','Mark Gillard','Michael Ryan','Ilya Yablonsky','Joey Milewski'];
+    const setterOptions = ['Gabe Malang','Ilya Yablonsky','Tim Coulter','Mark Gillard','Michael Ryan','Joey Milewski'];
+
     const overlay = document.createElement('div');
     overlay.id = 'buc-outcome-overlay';
     overlay.innerHTML = `
       <div id="buc-outcome-modal">
         <div class="om-header">
           <div class="om-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
             </svg>
           </div>
           <div>
-            <h2>Log Call Outcome</h2>
-            <p>${subtitle || 'Strategy Call'}</p>
+            <h2>Edit Appointment</h2>
+            <p>Update appointment details</p>
           </div>
           <button class="om-close" id="buc-close-btn">&#x2715;</button>
         </div>
         <div class="om-body">
           ${prefill._loading ? `<div class="om-loading" id="buc-loading-msg">Fetching existing data...</div>` : ''}
-          <div class="om-success" id="buc-success-msg">Outcome saved successfully.</div>
+          <div class="om-success" id="buc-success-msg">Changes saved successfully.</div>
           <div class="om-error" id="buc-error-msg">Failed to save. Please try again.</div>
           <div class="om-grid">
 
-            <div class="om-section">Call</div>
+            <div class="om-field">
+              <label>First Name</label>
+              <input type="text" id="buc-first-name" value="${prefill.firstName || ''}" readonly />
+            </div>
+            <div class="om-field">
+              <label>Last Name</label>
+              <input type="text" id="buc-last-name" value="${prefill.lastName || ''}" readonly />
+            </div>
+            <div class="om-field">
+              <label>Email</label>
+              <input type="email" id="buc-email" value="${prefill.email || ''}" readonly />
+            </div>
+            <div class="om-field">
+              <label>Phone</label>
+              <input type="text" id="buc-phone" value="${prefill.phone || ''}" readonly />
+            </div>
+            <div class="om-field">
+              <label>Date In</label>
+              <input type="text" id="buc-date-in" value="${prefill.dateIn || ''}" readonly />
+            </div>
+            <div class="om-field">
+              <label>Call Date</label>
+              <input type="text" id="buc-call-date" value="${prefill.callDate || ''}" readonly />
+            </div>
+
             <div class="om-field">
               <label>Call Status</label>
               <select id="buc-call-status">
-                <option value="">— Select —</option>
+                <option value="">— select —</option>
                 ${o(['Show','No Show','Rescheduled','Canceled'], prefill.callStatus)}
               </select>
             </div>
             <div class="om-field">
               <label>Call Outcome</label>
               <select id="buc-call-outcome">
-                <option value="">— Select —</option>
+                <option value="">— select —</option>
                 ${o(['PIF','Payment Plan','Deposit Made','Follow Up Scheduled','Not Sold','Not Qualified','Not Interested'], prefill.callOutcome)}
               </select>
             </div>
 
-            <div class="om-section">Payment</div>
+            <div class="om-field">
+              <label>Closer</label>
+              <select id="buc-closer">
+                <option value="">— select —</option>
+                ${o(closerOptions, prefill.closer)}
+              </select>
+            </div>
+            <div class="om-field">
+              <label>Setter</label>
+              <select id="buc-setter">
+                <option value="">— select —</option>
+                ${o(setterOptions, prefill.setter)}
+              </select>
+            </div>
+
             <div class="om-field">
               <label>Cash Collected</label>
-              <input type="number" id="buc-cash-collected" placeholder="0.00" min="0" step="0.01" value="${prefill.cashCollected || ''}" />
+              <input type="number" id="buc-cash-collected" placeholder="$ 0.00" min="0" step="0.01" value="${prefill.cashCollected || ''}" />
             </div>
             <div class="om-field">
               <label>Total Value</label>
-              <input type="number" id="buc-total-value" placeholder="0.00" min="0" step="0.01" value="${prefill.totalValue || ''}" />
+              <input type="number" id="buc-total-value" placeholder="$ 0.00" min="0" step="0.01" value="${prefill.totalValue || ''}" />
             </div>
 
-            <div class="om-section">Quality</div>
             <div class="om-field">
               <label>Lead Quality</label>
               <select id="buc-lead-quality">
-                <option value="">— Select —</option>
+                <option value="">— select —</option>
                 ${o(['💎 High Value','🟢 Qualified','🟡 So-So','🟠 Low Quality','🔴 Bad Lead'], prefill.leadQuality)}
               </select>
             </div>
             <div class="om-field">
               <label>Call Quality</label>
               <select id="buc-call-quality">
-                <option value="">— Select —</option>
+                <option value="">— select —</option>
                 ${o(['💎 Excellent Call','🟢 Good Call','🟡 Average Call','🟠 Weak Call','🔴 Bad Call'], prefill.callQuality)}
               </select>
             </div>
 
-            <div class="om-section">Recording & Notes</div>
             <div class="om-field full">
               <label>Recording URL</label>
               <input type="url" id="buc-recording" placeholder="https://..." value="${prefill.recording || ''}" />
             </div>
             <div class="om-field full">
               <label>Notes</label>
-              <textarea id="buc-notes" placeholder="Any notes...">${prefill.notes || ''}</textarea>
+              <textarea id="buc-notes" placeholder="Closer notes...">${prefill.notes || ''}</textarea>
             </div>
 
-            <div class="om-section">Jerry Review</div>
             <div class="om-field">
               <label>Jerry Grade</label>
               <select id="buc-jerry-grade">
-                <option value="">— Select —</option>
+                <option value="">— select —</option>
                 ${o(['A','B','C','D'], prefill.jerryGrade)}
               </select>
             </div>
@@ -404,8 +474,8 @@
           </div>
         </div>
         <div class="om-footer">
-          <button class="om-btn om-btn-skip" id="buc-skip-btn">Skip for now</button>
-          <button class="om-btn om-btn-primary" id="buc-submit-btn">Save Outcome</button>
+          <button class="om-btn om-btn-cancel" id="buc-skip-btn">Cancel</button>
+          <button class="om-btn om-btn-primary" id="buc-submit-btn">Save Changes</button>
         </div>
       </div>
     `;
@@ -417,7 +487,29 @@
     if (document.getElementById('buc-outcome-overlay')) return;
     log('Showing modal | contactId:', contactId, '| appointmentId:', appointmentId);
 
-    const overlay = buildModal(subtitle, { _loading: true });
+    // Pre-fill contact info from DOM and appointment registry
+    const domInfo  = scrapeContactInfo();
+    const apptData = apptRegistry[appointmentId] || {};
+    const callDate = formatApptDateTime(apptData.startTime || apptData.start || '');
+
+    // Detect closer from logged-in user
+    const closerTab   = getLoggedInCloserTab();
+    const closerNames = {
+      "Tim's Team": 'Tim Coulter', "Mark's Team": 'Mark Gillard',
+      "Mikey's Team": 'Michael Ryan', "Ilya's Team": 'Ilya Yablonsky',
+      "Joey's Team": 'Joey Milewski'
+    };
+    const detectedCloser = closerTab ? (closerNames[closerTab] || '') : '';
+
+    const overlay = buildModal(subtitle, {
+      _loading:  true,
+      firstName: domInfo.firstName,
+      lastName:  domInfo.lastName,
+      email:     domInfo.email,
+      phone:     domInfo.phone,
+      callDate,
+      closer:    detectedCloser,
+    });
     document.body.appendChild(overlay);
 
     const submitBtn  = document.getElementById('buc-submit-btn');
@@ -484,8 +576,15 @@
         appointmentId:  appointmentId || null,
         locationId:     LOCATION_ID,
         triggeredAt:    new Date().toISOString(),
+        firstName:      document.getElementById('buc-first-name').value,
+        lastName:       document.getElementById('buc-last-name').value,
+        email:          document.getElementById('buc-email').value,
+        phone:          document.getElementById('buc-phone').value,
+        callDate:       document.getElementById('buc-call-date').value,
         callStatus:     document.getElementById('buc-call-status').value,
         callOutcome:    document.getElementById('buc-call-outcome').value,
+        closer:         document.getElementById('buc-closer').value,
+        setter:         document.getElementById('buc-setter').value,
         cashCollected:  document.getElementById('buc-cash-collected').value,
         totalValue:     document.getElementById('buc-total-value').value,
         leadQuality:    document.getElementById('buc-lead-quality').value,

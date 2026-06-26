@@ -47,3 +47,5 @@ CLAUDE.local.md
 .cache/
 .playwright-mcp/
 tsconfig.tsbuildinfo
+
+.vercel

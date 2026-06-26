@@ -448,7 +448,12 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
   const [editRow,       setEditRow]       = useState<CallOutcome | null>(null)
   const [manageOpen,    setManageOpen]    = useState(false)
 
-  // Resize
+  // Panel resize (vertical)
+  const [panelHeight,   setPanelHeight]   = useState<number | null>(null)
+  const resizingPanel   = useRef<{ startY: number; startH: number } | null>(null)
+  const tableWrapRef    = useRef<HTMLDivElement>(null)
+
+  // Column resize
   const resizing          = useRef<{ key: ColKey; startX: number; startW: number } | null>(null)
   const isDraggingReorder = useRef(false)
 
@@ -477,7 +482,32 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
     } catch {}
   }, [])
 
-  // Resize handlers
+  // Panel resize handlers
+  const onPanelResizeMove = useCallback((e: MouseEvent) => {
+    if (!resizingPanel.current) return
+    const delta = e.clientY - resizingPanel.current.startY
+    const newH  = Math.max(200, resizingPanel.current.startH + delta)
+    setPanelHeight(newH)
+  }, [])
+
+  const onPanelResizeUp = useCallback(() => { resizingPanel.current = null }, [])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', onPanelResizeMove)
+    window.addEventListener('mouseup',   onPanelResizeUp)
+    return () => {
+      window.removeEventListener('mousemove', onPanelResizeMove)
+      window.removeEventListener('mouseup',   onPanelResizeUp)
+    }
+  }, [onPanelResizeMove, onPanelResizeUp])
+
+  function startPanelResize(e: React.MouseEvent) {
+    e.preventDefault()
+    const currentH = tableWrapRef.current?.clientHeight ?? panelHeight ?? 400
+    resizingPanel.current = { startY: e.clientY, startH: currentH }
+  }
+
+  // Column resize handlers
   const onResizeMove = useCallback((e: MouseEvent) => {
     if (!resizing.current || isDraggingReorder.current) return
     const delta = e.clientX - resizing.current.startX
@@ -730,7 +760,15 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 480px)', overflowY: 'auto' }} onDragOver={e => e.preventDefault()}>
+      <div
+        ref={tableWrapRef}
+        className="overflow-x-auto"
+        style={pageSize === 20
+          ? { maxHeight: panelHeight ?? 'calc(100vh - 480px)', overflowY: 'auto' }
+          : { overflowY: 'visible' }
+        }
+        onDragOver={e => e.preventDefault()}
+      >
         <table
           className="text-sm border-collapse"
           style={{ tableLayout: 'fixed', minWidth: '100%', width: totalW }}
@@ -869,6 +907,17 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Resize handle — only shown on 20/page */}
+      {pageSize === 20 && (
+        <div
+          onMouseDown={startPanelResize}
+          className="h-2 w-full cursor-row-resize flex items-center justify-center group border-t border-gray-100 hover:bg-teal-50 transition-colors"
+          title="Drag to resize"
+        >
+          <div className="w-12 h-1 rounded-full bg-gray-200 group-hover:bg-teal-300 transition-colors" />
+        </div>
+      )}
 
       {/* Pagination footer */}
       <div className="px-5 py-3 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
