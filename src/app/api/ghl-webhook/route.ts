@@ -88,8 +88,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) {
-    console.error('[ghl-webhook] Supabase error:', error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[ghl-webhook] Supabase error:', error?.message)
+    return NextResponse.json({ error: error?.message }, { status: 500 })
   }
 
   return NextResponse.json({ success: true, record: data })
