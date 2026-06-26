@@ -38,6 +38,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // DEBUG — remove after confirming payload shape
+  console.log('[ghl-webhook] raw body:', JSON.stringify(body, null, 2))
+  return NextResponse.json({ debug: true, received: body }, { status: 200 })
+
   // GHL sends the full inbound webhook payload — fields are nested under calendar/customData
   const calendar   = (body.calendar   ?? {}) as Record<string, unknown>
   const customData = (body.customData ?? {}) as Record<string, unknown>
