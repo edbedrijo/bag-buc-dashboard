@@ -38,36 +38,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // DEBUG — remove after confirming payload shape
-  console.log('[ghl-webhook] raw body:', JSON.stringify(body, null, 2))
-  return NextResponse.json({ debug: true, received: body }, { status: 200 })
+  // GHL sends our mapped fields inside customData
+  const cd = (body.customData ?? {}) as Record<string, unknown>
 
-  // GHL sends the full inbound webhook payload — fields are nested under calendar/customData
-  const calendar   = (body.calendar   ?? {}) as Record<string, unknown>
-  const customData = (body.customData ?? {}) as Record<string, unknown>
-
-  // appointment_id lives at calendar.appointmentId in the nested GHL payload
-  const appointmentId = str(calendar.appointmentId) ?? str(body.appointment_id)
+  const appointmentId = str(cd.appointment_id)
   if (!appointmentId) {
     return NextResponse.json({ error: 'appointment_id is required' }, { status: 400 })
   }
 
-  const closer = str(customData.appointment_assigned) ?? str(body.closer)
-  const setter = str(calendar.created_by) ?? str(body.setter)
+  const closer = str(cd.closer)
 
   const record = {
     appointment_id: appointmentId,
-    ghl_id:         str(body.contact_id),
+    ghl_id:         str(cd.contact_id),
     team_tab:       resolveTeamTab(closer ?? undefined),
-    date_created:   str(body.date_created),
+    date_created:   str(cd.date_created),
     date_in:        null,
-    first_name:     str(body.first_name),
-    last_name:      str(body.last_name),
-    email:          str(body.email),
-    phone:          str(body.phone),
-    call_date:      str(calendar.startTime) ?? str(body.call_date),
-    calendar:       str(calendar.calendarName) ?? str(body.calendar_name),
-    setter,
+    first_name:     str(cd.first_name),
+    last_name:      str(cd.last_name),
+    email:          str(cd.email),
+    phone:          str(cd.phone),
+    call_date:      str(cd.call_date),
+    calendar:       str(cd.calendar_name),
+    setter:         str(cd.setter),
     closer,
     call_status:    null,
     call_outcome:   null,
@@ -76,8 +69,8 @@ export async function POST(req: NextRequest) {
     lead_quality:   null,
     call_quality:   null,
     recording:      null,
-    guidance:       str(customData.guidance) ?? str(body.guidance),
-    avatar:         str(customData.avatar)   ?? str(body.avatar),
+    guidance:       str(cd.guidance),
+    avatar:         str(cd.avatar),
   }
 
   const admin = createAdminClient()
