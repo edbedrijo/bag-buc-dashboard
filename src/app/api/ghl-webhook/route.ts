@@ -38,43 +38,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // GHL nests appointment data under body.calendar
-  const calendar   = (body.calendar   ?? {}) as Record<string, unknown>
-  const customData = (body.customData ?? {}) as Record<string, unknown>
-
-  const appointmentId = str(calendar.appointmentId)
+  // GHL Webhook action sends a flat payload with custom-mapped fields.
+  // Fields come from the Custom Data section of the GHL Webhook action step.
+  const appointmentId = str(body.appointment_id)
   if (!appointmentId) {
-    return NextResponse.json({ error: 'calendar.appointmentId is required' }, { status: 400 })
+    return NextResponse.json({ error: 'appointment_id is required' }, { status: 400 })
   }
 
-  // Closer comes from customData.appointment_assigned
-  // Setter comes from Setter_Current (full name) or user object
-  const closer = str(customData.appointment_assigned)
-  const setter = str(body['Setter_Current']) ?? str(body['Setter_First'])
+  const closer = str(body.closer)
 
   const record = {
     appointment_id: appointmentId,
     ghl_id:         str(body.contact_id),
     team_tab:       resolveTeamTab(closer ?? undefined),
     date_created:   str(body.date_created),
-    date_in:        null,                         // filled later by closer outcome modal
+    date_in:        null,
     first_name:     str(body.first_name),
     last_name:      str(body.last_name),
     email:          str(body.email),
     phone:          str(body.phone),
-    call_date:      str(calendar.startTime),
-    calendar:       str(calendar.calendarName),
-    setter,
+    call_date:      str(body.call_date),
+    calendar:       str(body.calendar_name),
+    setter:         str(body.setter),
     closer,
-    call_status:    null,                         // filled later by closer outcome modal
+    call_status:    null,
     call_outcome:   null,
     cash_collected: null,
     total_value:    null,
-    lead_quality:   str(body['Lead Quality']),
+    lead_quality:   str(body.lead_quality),
     call_quality:   null,
     recording:      null,
-    guidance:       str(customData.guidance),
-    avatar:         str(customData.avatar),
+    guidance:       str(body.guidance),
+    avatar:         str(body.avatar),
   }
 
   const admin = createAdminClient()
