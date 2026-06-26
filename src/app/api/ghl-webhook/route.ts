@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     ghl_id:         str(cd.contact_id),
     team_tab:       resolveTeamTab(closer ?? undefined),
     date_created:   str(cd.date_created),
-    date_in:        null,
+    date_in:        str(cd.date_in),
     first_name:     str(cd.first_name),
     last_name:      str(cd.last_name),
     email:          str(cd.email),
