@@ -1,0 +1,156 @@
+{
+  "name": "BUC – Log Outcome",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "791ebe05-19c3-41d5-ad2c-8de75009948c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "791ebe05-19c3-41d5-ad2c-8de75009948c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find which BUC sheet tab contains this appointment ID\nconst SHEET_ID = '1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc';\nconst TABS = [\"Tim's Team\", \"Mark's Team\", \"Mikey's Team\", \"Ilya's Team\", \"Joey's Team\"];\n\nconst body = $json.body || $json;\nconst apptId = (body.appointmentId || '').trim();\n\nif (!apptId) {\n  return [{ json: { ...body, _found: false, _error: 'No appointmentId in payload' } }];\n}\n\nfunction parseCSV(text) {\n  return text.split('\\n').map(line => {\n    const cols = [];\n    let cur = '', inQuote = false;\n    for (let i = 0; i < line.length; i++) {\n      const ch = line[i];\n      if (ch === '\"') { inQuote = !inQuote; }\n      else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }\n      else { cur += ch; }\n    }\n    cols.push(cur.trim());\n    return cols;\n  });\n}\n\nfor (const tab of TABS) {\n  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;\n  let text;\n  try {\n    text = await $helpers.httpRequest({ url, method: 'GET' });\n  } catch (e) {\n    continue;\n  }\n  if (typeof text !== 'string') text = JSON.stringify(text);\n\n  const rows = parseCSV(text);\n  if (rows.length < 2) continue;\n\n  const headers = rows[0].map(h => h.replace(/^\"|\"$/g, '').trim());\n  const apptIdCol = headers.indexOf('Appointment ID');\n  if (apptIdCol === -1) continue;\n\n  for (let i = 1; i < rows.length; i++) {\n    const cell = (rows[i][apptIdCol] || '').replace(/^\"|\"$/g, '').trim();\n    if (cell === apptId) {\n      return [{\n        json: {\n          appointmentId:  body.appointmentId,\n          contactId:      body.contactId,\n          locationId:     body.locationId,\n          triggeredAt:    body.triggeredAt,\n          callStatus:     body.callStatus,\n          callOutcome:    body.callOutcome,\n          cashCollected:  body.cashCollected,\n          totalValue:     body.totalValue,\n          leadQuality:    body.leadQuality,\n          callQuality:    body.callQuality,\n          recording:      body.recording,\n          notes:          body.notes,\n          jerryGrade:     body.jerryGrade,\n          jerryCoachNote: body.jerryCoachNote,\n          _found: true,\n          _tab: tab\n        }\n      }];\n    }\n  }\n}\n\nreturn [{\n  json: {\n    appointmentId: apptId,\n    _found: false,\n    _error: `Appointment ID not found in any tab: ${apptId}`\n  }\n}];"
+      },
+      "id": "11111111-0000-0000-0000-000000000002",
+      "name": "Find Tab",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-found",
+              "leftValue": "={{ $json._found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000003",
+      "name": "Row Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json._tab }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Appointment ID":    "={{ $json.appointmentId }}",
+            "Call Status":       "={{ $json.callStatus }}",
+            "Call Outcome":      "={{ $json.callOutcome }}",
+            "Cash Collected":    "={{ $json.cashCollected }}",
+            "Total Value":       "={{ $json.totalValue }}",
+            "Lead Quality":      "={{ $json.leadQuality }}",
+            "Call Quality":      "={{ $json.callQuality }}",
+            "Recording":         "={{ $json.recording }}",
+            "Notes":             "={{ $json.notes }}",
+            "Jerry Grade":       "={{ $json.jerryGrade }}",
+            "Jerry Coaching Note": "={{ $json.jerryCoachNote }}"
+          },
+          "schema": [],
+          "matchingColumns": ["Appointment ID"],
+          "ignoreIfEmpty": false
+        },
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000004",
+      "name": "Update Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, tab: $json._tab, appointmentId: $json.appointmentId }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "11111111-0000-0000-0000-000000000005",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: $json._error }) }}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "id": "11111111-0000-0000-0000-000000000006",
+      "name": "Respond 404",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 420]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Find Tab", "type": "main", "index": 0 }]
+      ]
+    },
+    "Find Tab": {
+      "main": [
+        [{ "node": "Row Found?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Row Found?": {
+      "main": [
+        [{ "node": "Update Row", "type": "main", "index": 0 }],
+        [{ "node": "Respond 404", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Row": {
+      "main": [
+        [{ "node": "Respond 200", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

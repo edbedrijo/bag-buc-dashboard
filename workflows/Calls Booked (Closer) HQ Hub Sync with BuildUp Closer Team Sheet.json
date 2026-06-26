@@ -1,0 +1,245 @@
+{
+  "_id": "9d90155e-5982-46d0-b50f-7e5de87770a8",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "companyId": "Lbvv6aaHg8Iz2t5HYjuB",
+  "companyAge": 19,
+  "name": "Calls Booked (Closer) HQ Hub Sync with BuildUp Closer Team Sheet",
+  "status": "published",
+  "version": 14,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/9d90155e-5982-46d0-b50f-7e5de87770a8/14",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F9d90155e-5982-46d0-b50f-7e5de87770a8%2F14?alt=media&token=1c162369-7552-4e29-b7fe-b953d74b8602",
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "permission": 380,
+  "type": "workflow",
+  "parentId": "2f8f0b5b-b4f3-4f13-b50c-617f0b2adcbd",
+  "meta": {
+    "stepIndexCounter": {
+      "google_sheets": 3
+    }
+  },
+  "updatedBy": "R3KhnHdARNLgzZzaFRFM",
+  "createdAt": "2026-03-20T11:30:54.441Z",
+  "updatedAt": "2026-04-16T15:32:53.206Z",
+  "deleted": false,
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "isTriggerBucketMigrated": true,
+  "originType": "user",
+  "__v": 0,
+  "eventStartDate": null,
+  "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/9d90155e-5982-46d0-b50f-7e5de87770a8/14",
+  "window": null,
+  "workflowNote": null,
+  "id": "9d90155e-5982-46d0-b50f-7e5de87770a8",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "0ec91e70-147f-4926-b3f5-b8a88fb95cb1",
+        "stepIndex": 3,
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "16",
+            "name": "Calls Booked (Closer)"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{inboundWebhookRequest.Appointment ID}}"
+            },
+            "extra": {
+              "column": "A",
+              "value": "{{inboundWebhookRequest.GHL ID}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content"
+          ]
+        },
+        "name": "Find Appt in Calls Booked Closer",
+        "type": "google_sheets",
+        "next": "d668e0bf-e411-44b0-a676-15793d3dced5"
+      },
+      {
+        "id": "d668e0bf-e411-44b0-a676-15793d3dced5",
+        "stepIndex": 2,
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "16",
+            "name": "Calls Booked (Closer)"
+          },
+          "columnRange": [
+            "A",
+            "AC"
+          ],
+          "values": [
+            "{{inboundWebhookRequest.GHL ID}}",
+            "{{inboundWebhookRequest.Appointment ID}}",
+            "{{inboundWebhookRequest.Date Created}}",
+            "{{inboundWebhookRequest.Date In}}",
+            "{{inboundWebhookRequest.First Name}}",
+            "{{inboundWebhookRequest.Last Name}}",
+            "{{inboundWebhookRequest.Email}}",
+            "{{inboundWebhookRequest.Phone}}",
+            "{{inboundWebhookRequest.Call Date}}",
+            "{{inboundWebhookRequest.Calendar}}",
+            "{{inboundWebhookRequest.Setter}}",
+            "{{inboundWebhookRequest.Closer}}",
+            "{{inboundWebhookRequest.Call Status}}",
+            "{{inboundWebhookRequest.Call Outcome}}",
+            "{{inboundWebhookRequest.Cash Collected}}",
+            "{{inboundWebhookRequest.Total Value}}",
+            "{{inboundWebhookRequest.Lead Quality}}",
+            "{{inboundWebhookRequest.Call Quality}}",
+            "{{inboundWebhookRequest.Recording}}",
+            "{{inboundWebhookRequest.Guidance}}",
+            "{{inboundWebhookRequest.Avatar}}",
+            "{{inboundWebhookRequest.Latest Att Source}}",
+            "{{inboundWebhookRequest.Latest Att Channel}}",
+            "{{inboundWebhookRequest.Latest Att Asset}}",
+            "{{inboundWebhookRequest.utm source}}",
+            "{{inboundWebhookRequest.utm campaign}}",
+            "{{inboundWebhookRequest.utm medium}}",
+            "{{inboundWebhookRequest.utm content}}",
+            "{{inboundWebhookRequest.Notes}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content",
+            "Notes"
+          ],
+          "targetRow": "{{sheet.3.rowNumber}}",
+          "options": {}
+        },
+        "name": "Update Record in Booked Calls (Closer)",
+        "type": "google_sheets",
+        "parentKey": "0ec91e70-147f-4926-b3f5-b8a88fb95cb1"
+      }
+    ]
+  },
+  "permissionMeta": {
+    "canRead": true,
+    "canWrite": true
+  },
+  "scheduledPauseDates": [],
+  "exportedTriggers": [
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "9d90155e-5982-46d0-b50f-7e5de87770a8"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [],
+      "date_added": "2026-03-20T12:25:20.166Z",
+      "date_updated": "2026-03-24T07:39:56.063Z",
+      "deleted": false,
+      "id": "9edce8db-4a99-49eb-bc78-3ce040dc3ba1",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Inbound Webhook",
+      "type": "inbound_webhook",
+      "workflow_id": "9d90155e-5982-46d0-b50f-7e5de87770a8"
+    }
+  ]
+}

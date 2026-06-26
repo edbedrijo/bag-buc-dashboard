@@ -1,0 +1,651 @@
+<script>
+(function () {
+  // ─── CONFIG ───────────────────────────────────────────────────────────────
+  const LOCATION_ID = "n2gK5CxzjJj4tNIfcKHw";
+  const WEBHOOK_URL = "PASTE_N8N_WEBHOOK_URL_HERE";
+  const SHEET_ID    = "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc";
+  const DEBUG       = true;
+
+  // Calendars that show the Log Outcome button
+  const TARGET_CALENDARS = [
+    "strategy call with arthur & team",
+    "strategy follow up"
+  ];
+
+  // Closer name (as it appears in GHL) → Sheet tab name
+  const CLOSER_TAB_MAP = {
+    "tim":   "Tim's Team",
+    "mark":  "Mark's Team",
+    "mikey": "Mikey's Team",
+    "ilya":  "Ilya's Team",
+    "joey":  "Joey's Team"
+  };
+
+  // Column header names as they appear in the sheet (exact match)
+  const APPT_ID_HEADER = "Appointment ID";
+  const COL_HEADERS = {
+    callStatus:     "Call Status",
+    callOutcome:    "Call Outcome",
+    cashCollected:  "Cash Collected",
+    totalValue:     "Total Value",
+    leadQuality:    "Lead Quality",
+    callQuality:    "Call Quality",
+    recording:      "Recording",
+    notes:          "Notes",
+    jerryGrade:     "Jerry Grade",
+    jerryCoachNote: "Jerry Coaching Note"
+  };
+
+  function log(...args) { if (DEBUG) console.log('[OutcomeModal]', ...args); }
+
+  // ─── LOCATION GUARD ───────────────────────────────────────────────────────
+  const pathMatch = window.location.pathname.match(/location\/([^\/]+)/)?.[1];
+  const urlParam  = new URLSearchParams(window.location.search).get('location_id');
+  const lsId1     = localStorage.getItem('locationId');
+  const lsId2     = localStorage.getItem('___location');
+  const currentLocation = pathMatch || urlParam || lsId1 || lsId2;
+
+  if (currentLocation !== LOCATION_ID) { log('Location mismatch, exiting.'); return; }
+  if (window.__outcomeModalInitBUC) { log('Already initialized, skipping.'); return; }
+  window.__outcomeModalInitBUC = true;
+  log('Script initialized.');
+
+  // ─── INTERCEPT XHR + FETCH — CAPTURE APPOINTMENT IDs FROM RESPONSES ──────
+  let currentAppointmentId = null;
+
+  // Map of appointmentId → { title, calendarId, startTime, ... }
+  const apptRegistry = {};
+
+  function cleanApptId(rawId) {
+    // GHL stores composite keys like "apptId_contactId" — strip the contact suffix
+    if (!rawId) return null;
+    return rawId.split('_')[0];
+  }
+
+  function storeApptData(data) {
+    const items = Array.isArray(data) ? data
+      : data?.appointments || data?.data || data?.events || [];
+    items.forEach(item => {
+      if (item?.id && item.id.length > 10) {
+        const cleanId = cleanApptId(item.id);
+        apptRegistry[cleanId] = { ...item, _cleanId: cleanId };
+        log('Registered appointment:', cleanId, item.title || '', '| startTime:', item.startTime || item.start || '');
+      }
+    });
+  }
+
+  function extractApptIdFromUrl(url) {
+    const match = String(url).match(/appointments\/([a-zA-Z0-9]{15,})/);
+    if (match) { currentAppointmentId = match[1]; log('Captured appointment ID from URL:', currentAppointmentId); }
+  }
+
+  // Intercept XHR
+  const origOpen = XMLHttpRequest.prototype.open;
+  const origSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    this._url = url;
+    extractApptIdFromUrl(url);
+    return origOpen.apply(this, arguments);
+  };
+  XMLHttpRequest.prototype.send = function () {
+    this.addEventListener('load', function () {
+      try {
+        if (this._url && this._url.includes('appointment')) {
+          const data = JSON.parse(this.responseText);
+          storeApptData(data);
+        }
+      } catch (e) {}
+    });
+    return origSend.apply(this, arguments);
+  };
+
+  // Intercept fetch
+  const origFetch = window.fetch;
+  window.fetch = function (input, init) {
+    const url = typeof input === 'string' ? input : input?.url || '';
+    extractApptIdFromUrl(url);
+    const result = origFetch.apply(this, arguments);
+    if (url.includes('appointment')) {
+      result.then(res => {
+        res.clone().json().then(data => storeApptData(data)).catch(() => {});
+      }).catch(() => {});
+    }
+    return result;
+  };
+
+  // ─── GET LOGGED-IN CLOSER NAME ────────────────────────────────────────────
+  function getLoggedInCloserTab() {
+    const selectors = [
+      '[data-testid="user-name"]',
+      '.user-name',
+      '.navbar-user-name',
+      '[class*="userName"]',
+      '[class*="user-name"]'
+    ];
+    let name = null;
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (el?.textContent?.trim()) { name = el.textContent.trim().toLowerCase(); break; }
+    }
+    if (!name) {
+      try {
+        const userData = localStorage.getItem('user') || localStorage.getItem('userData');
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          name = (parsed.name || parsed.firstName || '').toLowerCase();
+        }
+      } catch (e) {}
+    }
+    log('Detected user name:', name);
+    if (!name) return null;
+    for (const [key, tab] of Object.entries(CLOSER_TAB_MAP)) {
+      if (name.includes(key)) return tab;
+    }
+    return null;
+  }
+
+  // ─── FETCH SHEET CSV ──────────────────────────────────────────────────────
+  async function fetchSheetCSV(tabName) {
+    const encoded = encodeURIComponent(tabName);
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encoded}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('CSV fetch failed for tab: ' + tabName);
+    return res.text();
+  }
+
+  function parseCSV(text) {
+    return text.split('\n').map(line => {
+      const cols = [];
+      let cur = '', inQuote = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQuote = !inQuote; }
+        else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur.trim());
+      return cols;
+    });
+  }
+
+  function buildColMap(headerRow) {
+    const map = { apptId: -1 };
+    headerRow.forEach((h, i) => {
+      const clean = h.replace(/^"|"$/g, '').trim();
+      if (clean === APPT_ID_HEADER) map.apptId = i;
+      for (const [key, name] of Object.entries(COL_HEADERS)) {
+        if (clean === name) map[key] = i;
+      }
+    });
+    return map;
+  }
+
+  async function findRowByAppointmentId(apptId) {
+    const primaryTab = getLoggedInCloserTab();
+    const allTabs = Object.values(CLOSER_TAB_MAP);
+    const tabOrder = primaryTab
+      ? [primaryTab, ...allTabs.filter(t => t !== primaryTab)]
+      : allTabs;
+
+    for (const tab of tabOrder) {
+      log('Searching tab:', tab);
+      try {
+        const csv = await fetchSheetCSV(tab);
+        const rows = parseCSV(csv);
+        if (rows.length < 2) continue;
+        const colMap = buildColMap(rows[0]);
+        if (colMap.apptId === -1) { log('Appointment ID column not found in tab:', tab); continue; }
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const cellVal = (row[colMap.apptId] || '').replace(/^"|"$/g, '').trim();
+          if (cellVal === apptId) {
+            log('Found row in tab:', tab, '| row index:', i);
+            return { row, tab, colMap };
+          }
+        }
+      } catch (e) { log('Error fetching tab:', tab, e); }
+    }
+    log('Appointment ID not found in any tab.');
+    return null;
+  }
+
+  // ─── STYLES ───────────────────────────────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    #buc-outcome-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      animation: bucFadeIn 0.18s ease;
+    }
+    @keyframes bucFadeIn { from { opacity:0 } to { opacity:1 } }
+    #buc-outcome-modal {
+      background: #fff; border-radius: 12px; width: 580px; max-width: 95vw;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      animation: bucSlideUp 0.2s ease;
+    }
+    @keyframes bucSlideUp { from { transform: translateY(16px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+    #buc-outcome-modal .om-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    #buc-outcome-modal .om-close {
+      margin-left: auto; background: none; border: none; cursor: pointer;
+      color: #9ca3af; padding: 4px; border-radius: 5px; font-size: 20px;
+      transition: color 0.15s, background 0.15s; flex-shrink: 0;
+    }
+    #buc-outcome-modal .om-close:hover { color: #374151; background: #f3f4f6; }
+    #buc-outcome-modal .om-icon {
+      width: 36px; height: 36px; border-radius: 8px; background: #eff6ff;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    #buc-outcome-modal .om-icon svg { width:18px; height:18px; }
+    #buc-outcome-modal .om-header h2 { margin: 0; font-size: 16px; font-weight: 600; color: #111827; }
+    #buc-outcome-modal .om-header p { margin: 2px 0 0; font-size: 13px; color: #6b7280; }
+    #buc-outcome-modal .om-body { padding: 20px 24px; }
+    #buc-outcome-modal .om-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    #buc-outcome-modal .om-field { display: flex; flex-direction: column; gap: 5px; }
+    #buc-outcome-modal .om-field.full { grid-column: 1 / -1; }
+    #buc-outcome-modal .om-section {
+      grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: 0.06em; padding-top: 6px;
+      border-top: 1px solid #f0f0f0; margin-top: 2px;
+    }
+    #buc-outcome-modal .om-field label {
+      font-size: 12px; font-weight: 600; color: #374151;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    #buc-outcome-modal .om-field select,
+    #buc-outcome-modal .om-field input,
+    #buc-outcome-modal .om-field textarea {
+      padding: 8px 11px; border: 1.5px solid #e5e7eb; border-radius: 7px;
+      font-size: 14px; color: #111827; background: #fff; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit; width: 100%; box-sizing: border-box;
+    }
+    #buc-outcome-modal .om-field select:focus,
+    #buc-outcome-modal .om-field input:focus,
+    #buc-outcome-modal .om-field textarea:focus {
+      border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    #buc-outcome-modal .om-field textarea { resize: vertical; min-height: 72px; }
+    #buc-outcome-modal .om-footer {
+      padding: 16px 24px; border-top: 1px solid #f0f0f0;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    #buc-outcome-modal .om-btn {
+      padding: 9px 20px; border-radius: 7px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.15s; font-family: inherit;
+    }
+    #buc-outcome-modal .om-btn-primary { background: #3b82f6; color: #fff; }
+    #buc-outcome-modal .om-btn-primary:hover { background: #2563eb; }
+    #buc-outcome-modal .om-btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+    #buc-outcome-modal .om-btn-skip { background: none; color: #6b7280; border: 1.5px solid #e5e7eb; }
+    #buc-outcome-modal .om-btn-skip:hover { background: #f9fafb; color: #374151; }
+    #buc-outcome-modal .om-loading {
+      padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 7px; color: #1e40af; font-size: 13px; font-weight: 500;
+      margin-bottom: 14px;
+    }
+    #buc-outcome-modal .om-success {
+      padding: 10px 14px; background: #ecfdf5; border: 1px solid #86efac;
+      border-radius: 7px; color: #166534; font-size: 13px; font-weight: 500;
+      margin-bottom: 14px; display: none;
+    }
+    #buc-outcome-modal .om-error {
+      padding: 10px 14px; background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 7px; color: #991b1b; font-size: 13px; font-weight: 500;
+      margin-bottom: 14px; display: none;
+    }
+    .buc-log-btn {
+      width: 100%; margin-top: 10px; padding: 7px 0;
+      background: #eff6ff; border: none; border-radius: 7px;
+      font-size: 13px; font-weight: 600; color: #1d4ed8;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .buc-log-btn:hover { background: #dbeafe; }
+  `;
+  document.head.appendChild(style);
+
+  // ─── BUILD MODAL HTML ─────────────────────────────────────────────────────
+  function buildModal(subtitle, prefill = {}) {
+    const o = (options, val) => options.map(opt =>
+      `<option${opt === val ? ' selected' : ''}>${opt}</option>`
+    ).join('');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'buc-outcome-overlay';
+    overlay.innerHTML = `
+      <div id="buc-outcome-modal">
+        <div class="om-header">
+          <div class="om-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+          </div>
+          <div>
+            <h2>Log Call Outcome</h2>
+            <p>${subtitle || 'Strategy Call'}</p>
+          </div>
+          <button class="om-close" id="buc-close-btn">&#x2715;</button>
+        </div>
+        <div class="om-body">
+          ${prefill._loading ? `<div class="om-loading" id="buc-loading-msg">Fetching existing data...</div>` : ''}
+          <div class="om-success" id="buc-success-msg">Outcome saved successfully.</div>
+          <div class="om-error" id="buc-error-msg">Failed to save. Please try again.</div>
+          <div class="om-grid">
+
+            <div class="om-section">Call</div>
+            <div class="om-field">
+              <label>Call Status</label>
+              <select id="buc-call-status">
+                <option value="">— Select —</option>
+                ${o(['Show','No Show','Rescheduled','Canceled'], prefill.callStatus)}
+              </select>
+            </div>
+            <div class="om-field">
+              <label>Call Outcome</label>
+              <select id="buc-call-outcome">
+                <option value="">— Select —</option>
+                ${o(['PIF','Payment Plan','Deposit Made','Follow Up Scheduled','Not Sold','Not Qualified','Not Interested'], prefill.callOutcome)}
+              </select>
+            </div>
+
+            <div class="om-section">Payment</div>
+            <div class="om-field">
+              <label>Cash Collected</label>
+              <input type="number" id="buc-cash-collected" placeholder="0.00" min="0" step="0.01" value="${prefill.cashCollected || ''}" />
+            </div>
+            <div class="om-field">
+              <label>Total Value</label>
+              <input type="number" id="buc-total-value" placeholder="0.00" min="0" step="0.01" value="${prefill.totalValue || ''}" />
+            </div>
+
+            <div class="om-section">Quality</div>
+            <div class="om-field">
+              <label>Lead Quality</label>
+              <select id="buc-lead-quality">
+                <option value="">— Select —</option>
+                ${o(['💎 High Value','🟢 Qualified','🟡 So-So','🟠 Low Quality','🔴 Bad Lead'], prefill.leadQuality)}
+              </select>
+            </div>
+            <div class="om-field">
+              <label>Call Quality</label>
+              <select id="buc-call-quality">
+                <option value="">— Select —</option>
+                ${o(['💎 Excellent Call','🟢 Good Call','🟡 Average Call','🟠 Weak Call','🔴 Bad Call'], prefill.callQuality)}
+              </select>
+            </div>
+
+            <div class="om-section">Recording & Notes</div>
+            <div class="om-field full">
+              <label>Recording URL</label>
+              <input type="url" id="buc-recording" placeholder="https://..." value="${prefill.recording || ''}" />
+            </div>
+            <div class="om-field full">
+              <label>Notes</label>
+              <textarea id="buc-notes" placeholder="Any notes...">${prefill.notes || ''}</textarea>
+            </div>
+
+            <div class="om-section">Jerry Review</div>
+            <div class="om-field">
+              <label>Jerry Grade</label>
+              <select id="buc-jerry-grade">
+                <option value="">— Select —</option>
+                ${o(['A','B','C','D'], prefill.jerryGrade)}
+              </select>
+            </div>
+            <div class="om-field full">
+              <label>Jerry Coaching Note</label>
+              <textarea id="buc-jerry-note" placeholder="Coaching notes...">${prefill.jerryCoachNote || ''}</textarea>
+            </div>
+
+          </div>
+        </div>
+        <div class="om-footer">
+          <button class="om-btn om-btn-skip" id="buc-skip-btn">Skip for now</button>
+          <button class="om-btn om-btn-primary" id="buc-submit-btn">Save Outcome</button>
+        </div>
+      </div>
+    `;
+    return overlay;
+  }
+
+  // ─── SHOW MODAL ───────────────────────────────────────────────────────────
+  async function showModal(contactId, appointmentId, subtitle, statusOverride) {
+    if (document.getElementById('buc-outcome-overlay')) return;
+    log('Showing modal | contactId:', contactId, '| appointmentId:', appointmentId);
+
+    const overlay = buildModal(subtitle, { _loading: true });
+    document.body.appendChild(overlay);
+
+    const submitBtn  = document.getElementById('buc-submit-btn');
+    const successMsg = document.getElementById('buc-success-msg');
+    const errorMsg   = document.getElementById('buc-error-msg');
+    const loadingMsg = document.getElementById('buc-loading-msg');
+
+    document.getElementById('buc-close-btn').addEventListener('click', () => overlay.remove());
+    document.getElementById('buc-skip-btn').addEventListener('click', () => overlay.remove());
+
+    if (appointmentId) {
+      findRowByAppointmentId(appointmentId).then(result => {
+        if (loadingMsg) loadingMsg.remove();
+        if (result) {
+          const { row, colMap } = result;
+          const get = (key) => {
+            const idx = colMap[key];
+            return (idx !== undefined && idx !== -1) ? (row[idx] || '').replace(/^"|"$/g, '').trim() : '';
+          };
+          const fields = {
+            'buc-call-status':    get('callStatus'),
+            'buc-call-outcome':   get('callOutcome'),
+            'buc-cash-collected': get('cashCollected'),
+            'buc-total-value':    get('totalValue'),
+            'buc-lead-quality':   get('leadQuality'),
+            'buc-call-quality':   get('callQuality'),
+            'buc-recording':      get('recording'),
+            'buc-notes':          get('notes'),
+            'buc-jerry-grade':    get('jerryGrade'),
+            'buc-jerry-note':     get('jerryCoachNote'),
+          };
+          for (const [id, val] of Object.entries(fields)) {
+            const el = document.getElementById(id);
+            if (!el || !val) continue;
+            if (el.tagName === 'SELECT') {
+              for (const opt of el.options) {
+                if (opt.text === val) { opt.selected = true; break; }
+              }
+            } else {
+              el.value = val;
+            }
+          }
+          log('Pre-filled from sheet.');
+        } else {
+          log('No existing row — blank modal.');
+        }
+        if (statusOverride) {
+          const el = document.getElementById('buc-call-status');
+          if (el) for (const opt of el.options) {
+            if (opt.text.toLowerCase() === statusOverride.toLowerCase()) { opt.selected = true; break; }
+          }
+        }
+      }).catch(err => {
+        log('Pre-fill error:', err);
+        if (loadingMsg) loadingMsg.remove();
+      });
+    } else {
+      if (loadingMsg) loadingMsg.remove();
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const payload = {
+        contactId,
+        appointmentId:  appointmentId || null,
+        locationId:     LOCATION_ID,
+        triggeredAt:    new Date().toISOString(),
+        callStatus:     document.getElementById('buc-call-status').value,
+        callOutcome:    document.getElementById('buc-call-outcome').value,
+        cashCollected:  document.getElementById('buc-cash-collected').value,
+        totalValue:     document.getElementById('buc-total-value').value,
+        leadQuality:    document.getElementById('buc-lead-quality').value,
+        callQuality:    document.getElementById('buc-call-quality').value,
+        recording:      document.getElementById('buc-recording').value,
+        notes:          document.getElementById('buc-notes').value,
+        jerryGrade:     document.getElementById('buc-jerry-grade').value,
+        jerryCoachNote: document.getElementById('buc-jerry-note').value,
+      };
+
+      log('Sending payload:', payload);
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          successMsg.style.display = 'block';
+          submitBtn.textContent = 'Saved';
+          setTimeout(() => overlay.remove(), 1800);
+        } else {
+          throw new Error('Non-OK: ' + res.status);
+        }
+      } catch (err) {
+        log('Webhook error:', err);
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Outcome';
+      }
+    });
+  }
+
+  // ─── STATUS CHANGE DETECTION ──────────────────────────────────────────────
+  let pendingStatus = null;
+  let pendingStatusTime = 0;
+
+  function setPending(status) { pendingStatus = status; pendingStatusTime = Date.now(); log('Pending status:', status); }
+  function consumePending() {
+    if (!pendingStatus) return null;
+    if (Date.now() - pendingStatusTime > 60000) { pendingStatus = null; return null; }
+    const s = pendingStatus; pendingStatus = null; return s;
+  }
+
+  const STATUS_VALUES = ['show', 'showed', 'no show', 'no-show', 'rescheduled', 'canceled', 'cancelled'];
+
+  document.addEventListener('change', (e) => {
+    const el = e.target;
+    if (el.tagName !== 'SELECT') return;
+    const v = (el.value || '').toLowerCase().trim();
+    if (STATUS_VALUES.some(s => v.includes(s))) setPending(el.value);
+  }, true);
+
+  document.addEventListener('click', (e) => {
+    const text = e.target.textContent?.trim();
+    if (!text) return;
+    const lower = text.toLowerCase();
+    if (STATUS_VALUES.some(s => lower.includes(s))) {
+      const isOption = e.target.closest('ul, [role="listbox"], [class*="dropdown"], [class*="select-option"], [class*="list-item"]');
+      if (isOption) setPending(text);
+    }
+  }, true);
+
+  function getContactId() { return window.location.pathname.split('/').pop(); }
+
+  // ─── SAVE BUTTON DETECTION ────────────────────────────────────────────────
+  const listenedButtons = new WeakSet();
+
+  function attachSaveListeners() {
+    document.querySelectorAll('button').forEach(btn => {
+      const text = btn.textContent.trim();
+      if ((text === 'Save' || text === 'Save Changes') && !listenedButtons.has(btn)) {
+        listenedButtons.add(btn);
+        btn.addEventListener('click', () => {
+          const status = consumePending();
+          if (status) {
+            const contactId     = getContactId();
+            const appointmentId = currentAppointmentId;
+            log('Status-change trigger | status:', status);
+            setTimeout(() => showModal(contactId, appointmentId, 'Appointment status updated', status), 700);
+          }
+        }, true);
+      }
+    });
+  }
+
+  // ─── LOG OUTCOME BUTTON INJECTION ─────────────────────────────────────────
+  const injectedCards = new WeakSet();
+
+  function isTargetCalendar(cardEl) {
+    const text = cardEl.textContent?.toLowerCase() || '';
+    return TARGET_CALENDARS.some(cal => text.includes(cal));
+  }
+
+  function injectLogButtons() {
+    const cards = document.querySelectorAll(
+      '[class*="appointment-card"], [class*="appointmentCard"], [class*="appointment-item"], [class*="appointmentItem"]'
+    );
+    cards.forEach(card => {
+      if (injectedCards.has(card)) return;
+      if (!isTargetCalendar(card)) return;
+      injectedCards.add(card);
+
+      const btn = document.createElement('button');
+      btn.className = 'buc-log-btn';
+      btn.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+        Log Outcome
+      `;
+
+      function resolveApptId() {
+        if (card.dataset.bucApptId) return card.dataset.bucApptId;
+        const cardText = card.textContent;
+        for (const [id, appt] of Object.entries(apptRegistry)) {
+          const start = appt.startTime || appt.start || '';
+          if (!start) continue;
+          // Parse time directly from ISO string to avoid UTC conversion
+          const timePart = start.split('T')[1] || '';
+          const [hourStr, minStr] = timePart.split(':');
+          const hour = parseInt(hourStr, 10);
+          const min  = minStr || '00';
+          const ampm = hour >= 12 ? 'pm' : 'am';
+          const h12  = ((hour % 12) || 12);
+          const timeStr = `${h12}:${min}`;
+          if (cardText.includes(timeStr) || cardText.toLowerCase().includes(timeStr + ' ' + ampm)) {
+            log('Matched registry by time:', id, timeStr);
+            card.dataset.bucApptId = id;
+            return id;
+          }
+        }
+        return currentAppointmentId;
+      }
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const apptId  = resolveApptId();
+        const subtitle = card.querySelector('[class*="title"], [class*="name"]')?.textContent?.trim() || 'Strategy Call';
+        log('Log Outcome button clicked | apptId:', apptId);
+        showModal(getContactId(), apptId, subtitle, null);
+      });
+      card.appendChild(btn);
+      log('Injected Log Outcome button into card.');
+    });
+  }
+
+  // ─── OBSERVE DOM ──────────────────────────────────────────────────────────
+  const observer = new MutationObserver(() => {
+    attachSaveListeners();
+    injectLogButtons();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  attachSaveListeners();
+  injectLogButtons();
+
+})();
+</script>

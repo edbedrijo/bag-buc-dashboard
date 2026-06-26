@@ -1,0 +1,2150 @@
+{
+  "_id": "15299dad-ed79-425c-81a1-4c4c38e558de",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "companyId": "Lbvv6aaHg8Iz2t5HYjuB",
+  "companyAge": 19,
+  "name": "Strategy Call Booked (Setter&Closer) Show/No Show -> Calls Booked HQ Hub (GSheet)",
+  "status": "published",
+  "version": 21,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "eventStartDate": null,
+  "window": null,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/15299dad-ed79-425c-81a1-4c4c38e558de/21",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F15299dad-ed79-425c-81a1-4c4c38e558de%2F21?alt=media&token=03a4a4b1-0274-4743-b1c3-80e2791a0d0d",
+  "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/15299dad-ed79-425c-81a1-4c4c38e558de/17",
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "permission": 380,
+  "type": "workflow",
+  "parentId": "2f8f0b5b-b4f3-4f13-b50c-617f0b2adcbd",
+  "meta": {
+    "stepIndexCounter": {
+      "google_sheets": 50,
+      "custom_code": 1
+    }
+  },
+  "createdAt": "2026-03-26T14:28:31.636Z",
+  "updatedAt": "2026-04-20T11:23:41.379Z",
+  "deleted": false,
+  "workflowNote": {
+    "content": "",
+    "createdBy": "clone_workflow",
+    "createdByName": "clone_workflow",
+    "createdAt": "2026-03-26T14:28:31.910Z",
+    "updatedBy": "clone_workflow",
+    "updatedByName": "clone_workflow",
+    "updatedAt": "2026-03-26T14:28:31.910Z"
+  },
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "isTriggerBucketMigrated": true,
+  "originType": "duplicate-workflow",
+  "__v": 0,
+  "updatedBy": "R3KhnHdARNLgzZzaFRFM",
+  "id": "15299dad-ed79-425c-81a1-4c4c38e558de",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "a6d057df-46e5-4829-bff1-98a1235dfe71",
+        "order": 0,
+        "attributes": {
+          "method": "POST",
+          "url": "https://n8n.srv1021441.hstgr.cloud/webhook/23a0e04d-4e1a-4a7b-bd4e-bfe968fe53af",
+          "customData": [],
+          "headers": []
+        },
+        "name": "Send webhook to n8n",
+        "type": "webhook",
+        "next": "1539dd07-091f-4c90-b180-79c1ef84406b"
+      },
+      {
+        "id": "1539dd07-091f-4c90-b180-79c1ef84406b",
+        "stepIndex": 1,
+        "order": 1,
+        "attributes": {
+          "code": "const contactId = inputData.contactId;\nconst appointmentId = inputData.appointmentId;\n\nconst titleCase = str => str.replace(/\\w\\S*/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());\n\nconst statusMap = {\n  'noshow': 'No Show',\n  'showed': 'Show',\n  'cancelled': 'Canceled'\n};\n\nconst formatStatus = str => statusMap[str.toLowerCase()] || titleCase(str);\n\nconst response = await customRequest.get(\n  `https://services.leadconnectorhq.com/contacts/${contactId}/appointments`,\n  {\n    headers: {\n      'Authorization': 'Bearer pit-06383926-0745-4053-898a-f18b22eee3e8',\n      'Version': '2021-07-28',\n      'Accept': 'application/json'\n    }\n  }\n);\n\nconst events = response.data.events;\nconst appointment = events.find(e => e.id === appointmentId);\n\nif (!appointment) {\n  output = { error: 'Appointment not found', appointmentId };\n} else {\n  output = {\n    appointmentId: appointment.id,\n    contactId: appointment.contactId,\n    calendarId: appointment.calendarId,\n    assignedUserId: appointment.assignedUserId,\n    appointmentStatus: formatStatus(appointment.appointmentStatus),\n    startTime: appointment.startTime,\n    endTime: appointment.endTime,\n    title: appointment.title,\n    notes: appointment.notes,\n    address: appointment.address,\n    dateAdded: appointment.dateAdded,\n    dateUpdated: appointment.dateUpdated\n  };\n}",
+          "language": "javascript",
+          "inputData": {
+            "contactId": "{{contact.id}}",
+            "appointmentId": "{{appointment.id}}"
+          },
+          "output": {
+            "appointmentId": "Hqfl9QtrAwFz6IDxxyay",
+            "contactId": "n8QO35sxUFC0XK7M8NWz",
+            "calendarId": "JnC2s3WRw8BGgRb085O0",
+            "assignedUserId": "83taXdqdNjYw6XTs64f0",
+            "appointmentStatus": "showed",
+            "startTime": "2026-03-30 11:30:00",
+            "endTime": "2026-03-30 12:30:00",
+            "title": " Test Closer & Ilya: BuildUp Session",
+            "notes": "This is a test",
+            "address": "https://meet.google.com/eep-sgrt-krt",
+            "dateAdded": "2026-03-26 00:58:42",
+            "dateUpdated": "2026-03-26 07:34:19"
+          }
+        },
+        "name": "Get Appointment & Status",
+        "type": "custom_code",
+        "next": "4fc69ec9-801e-43a8-92c9-0324eba558a9",
+        "parentKey": "a6d057df-46e5-4829-bff1-98a1235dfe71"
+      },
+      {
+        "id": "4fc69ec9-801e-43a8-92c9-0324eba558a9",
+        "order": 2,
+        "attributes": {
+          "currentRecipeType": "CUSTOM",
+          "branches": [
+            {
+              "id": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+              "name": "Showed",
+              "segments": [
+                {
+                  "__segmentId": "0cabaf6d-0c1f-44c8-a355-c4229bdd5b68",
+                  "operator": "or",
+                  "conditions": [
+                    {
+                      "conditionType": "custom_code",
+                      "conditionSubType": "1.output.appointmentStatus",
+                      "conditionOperator": "contain",
+                      "conditionValue": "Showed",
+                      "__conditionId": "cf9fdaba-26ba-4b7a-bde9-be067e9f615c",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    },
+                    {
+                      "conditionType": "custom_code",
+                      "conditionSubType": "1.output.appointmentStatus",
+                      "conditionOperator": "contain",
+                      "conditionValue": "no show",
+                      "__conditionId": "966d6744-1b8f-4e97-9980-a7bf392ab9d3",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    },
+                    {
+                      "conditionType": "custom_code",
+                      "conditionSubType": "1.output.appointmentStatus",
+                      "conditionOperator": "contain",
+                      "conditionValue": "Canceled",
+                      "__conditionId": "8d047533-7387-4fbc-a730-f91ae740c8fd",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    },
+                    {
+                      "conditionType": "custom_code",
+                      "conditionSubType": "1.output.appointmentStatus",
+                      "conditionOperator": "contain",
+                      "conditionValue": "Cancelled",
+                      "__conditionId": "25c452e5-e96c-44a0-972b-d7059f5e49e1",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            }
+          ],
+          "operator": "and",
+          "if": true,
+          "conditionName": "Status",
+          "version": 2,
+          "noneBranchName": "None"
+        },
+        "name": "yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": [
+          "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+          "0e3e040b-953a-4d88-b16a-f151a2102a74"
+        ],
+        "comments": [],
+        "nodeType": "condition-node",
+        "parentKey": "1539dd07-091f-4c90-b180-79c1ef84406b"
+      },
+      {
+        "id": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+        "parent": "4fc69ec9-801e-43a8-92c9-0324eba558a9",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Showed",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "8e3c660a-5b37-491d-8590-5e6bda6297ea",
+        "sibling": [
+          "0e3e040b-953a-4d88-b16a-f151a2102a74"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "4fc69ec9-801e-43a8-92c9-0324eba558a9"
+      },
+      {
+        "id": "8e3c660a-5b37-491d-8590-5e6bda6297ea",
+        "stepIndex": 35,
+        "parent": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "17",
+            "name": "Calls Booked (Closer)"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content",
+            "Notes"
+          ]
+        },
+        "name": "Find Apppointment in Calls Booked Closer",
+        "type": "google_sheets",
+        "parentKey": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+        "next": "af9e8209-82df-4e19-a8dd-7837807e1ca3"
+      },
+      {
+        "id": "af9e8209-82df-4e19-a8dd-7837807e1ca3",
+        "stepIndex": 44,
+        "parent": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "17",
+            "name": "Calls Booked (Closer)"
+          },
+          "columnRange": [
+            "A",
+            "AC"
+          ],
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content",
+            "Notes"
+          ],
+          "targetRow": "{{sheet.35.rowNumber}}",
+          "options": {}
+        },
+        "name": "Update Specific Spreadsheet Row",
+        "type": "google_sheets",
+        "next": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "parentKey": "8e3c660a-5b37-491d-8590-5e6bda6297ea"
+      },
+      {
+        "id": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "parent": "8574aa4e-94d4-4e3f-896e-11e6acc31b3f",
+        "order": 2,
+        "attributes": {
+          "currentRecipeType": "CUSTOM",
+          "branches": [
+            {
+              "id": "e421eed3-0592-44e8-bb90-afb792043da4",
+              "name": "Mark",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Mark Bilan",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            },
+            {
+              "id": "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+              "name": "Tim Coulter",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Tim Coulter",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            },
+            {
+              "id": "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+              "name": "Michael Ryapolov",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Michael Ryapolov",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            },
+            {
+              "id": "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+              "name": "Ilya Yablonsky",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Ilya Yablonsky",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            },
+            {
+              "id": "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+              "name": "Terry Regenwetter",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Terry Regenwetter",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            },
+            {
+              "id": "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+              "name": "Joey Milewski",
+              "segments": [
+                {
+                  "__segmentId": "071d525b-53e9-4fb4-9b54-0b232df5a288",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "35.L",
+                      "conditionOperator": "==",
+                      "conditionValue": "Joey Milewski",
+                      "__conditionId": "58a572f2-8386-4610-a089-a59980c4d4aa",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            }
+          ],
+          "operator": "and",
+          "if": true,
+          "conditionName": "Condition",
+          "version": 2,
+          "noneBranchName": "None"
+        },
+        "name": "yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "condition-node",
+        "parentKey": "af9e8209-82df-4e19-a8dd-7837807e1ca3"
+      },
+      {
+        "id": "e421eed3-0592-44e8-bb90-afb792043da4",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Mark",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "59f88a7c-3a4b-43fe-b541-a53a4871c35b",
+        "sibling": [
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "59f88a7c-3a4b-43fe-b541-a53a4871c35b",
+        "stepIndex": 36,
+        "parent": "e421eed3-0592-44e8-bb90-afb792043da4",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "1",
+            "name": "Mark's Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Mark Team's Sheet",
+        "type": "google_sheets",
+        "next": "522dce1d-3820-4d5c-9ea2-1857d205c74a",
+        "parentKey": "e421eed3-0592-44e8-bb90-afb792043da4"
+      },
+      {
+        "id": "522dce1d-3820-4d5c-9ea2-1857d205c74a",
+        "stepIndex": 37,
+        "parent": "e421eed3-0592-44e8-bb90-afb792043da4",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "1",
+            "name": "Mark's Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.36.rowNumber}}"
+        },
+        "name": "Update Status Calls",
+        "type": "google_sheets",
+        "parentKey": "59f88a7c-3a4b-43fe-b541-a53a4871c35b"
+      },
+      {
+        "id": "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Tim Coulter",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "ba8f1097-876a-4ab0-98f5-65d3ae4981fe",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "ba8f1097-876a-4ab0-98f5-65d3ae4981fe",
+        "stepIndex": 38,
+        "parent": "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "0",
+            "name": "Tim's Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Tim Team's Sheet",
+        "type": "google_sheets",
+        "next": "e7dc5b09-62d7-415a-b0ed-c9f6c07994c6",
+        "parentKey": "529a3231-f1ae-4c0f-8374-7f9a989293d9"
+      },
+      {
+        "id": "e7dc5b09-62d7-415a-b0ed-c9f6c07994c6",
+        "stepIndex": 39,
+        "parent": "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "0",
+            "name": "Tim's Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.38.rowNumber}}"
+        },
+        "name": "Update Status  Calls ",
+        "type": "google_sheets",
+        "parentKey": "ba8f1097-876a-4ab0-98f5-65d3ae4981fe"
+      },
+      {
+        "id": "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Michael Ryapolov",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "dc821f21-9116-4dd8-8e13-132f0cf1056f",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "dc821f21-9116-4dd8-8e13-132f0cf1056f",
+        "stepIndex": 40,
+        "parent": "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "2",
+            "name": "Mikey's Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Mark Team's Sheet",
+        "type": "google_sheets",
+        "next": "4f2f80ad-dd08-4017-8c5d-e44403cf747f",
+        "parentKey": "eaf0e1de-d345-432d-ae75-2e97eb85277b"
+      },
+      {
+        "id": "4f2f80ad-dd08-4017-8c5d-e44403cf747f",
+        "stepIndex": 41,
+        "parent": "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "2",
+            "name": "Mikey's Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.40.rowNumber}}"
+        },
+        "name": "Update Status  Calls ",
+        "type": "google_sheets",
+        "parentKey": "dc821f21-9116-4dd8-8e13-132f0cf1056f"
+      },
+      {
+        "id": "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Ilya Yablonsky",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "772f8704-5fc1-4464-81ba-6f4ea4868f16",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "772f8704-5fc1-4464-81ba-6f4ea4868f16",
+        "stepIndex": 42,
+        "parent": "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "3",
+            "name": "Ilya's Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Ilya's Sheet",
+        "type": "google_sheets",
+        "next": "97da31de-c926-4b5f-b3e6-1e0280f088d9",
+        "parentKey": "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424"
+      },
+      {
+        "id": "97da31de-c926-4b5f-b3e6-1e0280f088d9",
+        "stepIndex": 43,
+        "parent": "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "3",
+            "name": "Ilya's Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.42.rowNumber}}"
+        },
+        "name": "Update Status  Calls ",
+        "type": "google_sheets",
+        "parentKey": "772f8704-5fc1-4464-81ba-6f4ea4868f16"
+      },
+      {
+        "id": "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Terry Regenwetter",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "ff762710-16cb-4593-a230-9a280c743e26",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "ff762710-16cb-4593-a230-9a280c743e26",
+        "stepIndex": 47,
+        "parent": "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "4",
+            "name": "Terry’s Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Terry's Sheet",
+        "type": "google_sheets",
+        "next": "815ae06d-3dc2-4e2c-bd01-e20e61425e6f",
+        "parentKey": "8c00f6fa-cd50-4809-bed0-b476082b20d7"
+      },
+      {
+        "id": "815ae06d-3dc2-4e2c-bd01-e20e61425e6f",
+        "stepIndex": 48,
+        "parent": "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "4",
+            "name": "Terry’s Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.47.rowNumber}}"
+        },
+        "name": "Update Status  Calls ",
+        "type": "google_sheets",
+        "parentKey": "ff762710-16cb-4593-a230-9a280c743e26"
+      },
+      {
+        "id": "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Joey Milewski",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "8397a66a-48aa-4bde-8679-80234e25cd50",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "3196674a-5888-413b-a2d0-c71223d34db7"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "8397a66a-48aa-4bde-8679-80234e25cd50",
+        "stepIndex": 49,
+        "parent": "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "5",
+            "name": "Joey's Team"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "B",
+              "value": "{{appointment.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ]
+        },
+        "name": "Find record in Joey's Sheet",
+        "type": "google_sheets",
+        "next": "4668e3ab-120a-4895-a279-ededd220965e",
+        "parentKey": "2586affd-d301-4fdb-8a80-7a6c761c09b3"
+      },
+      {
+        "id": "4668e3ab-120a-4895-a279-ededd220965e",
+        "stepIndex": 50,
+        "parent": "2586affd-d301-4fdb-8a80-7a6c761c09b3",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc",
+            "name": "BuildUp Closer Team"
+          },
+          "sheet": {
+            "id": "5",
+            "name": "Joey's Team"
+          },
+          "columnRange": [
+            "A",
+            "V"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "=DATEVALUE(LEFT(\"{{custom_code.1.output.startTime}}\",10))+TIMEVALUE(MID(\"{{custom_code.1.output.startTime}}\",12,8))",
+            null,
+            null,
+            null,
+            "{{custom_code.1.output.appointmentStatus}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Calendar",
+            "Setter",
+            "Closer",
+            "Call Status",
+            "Call Outcome",
+            "Cash Collected",
+            "Total Value",
+            "Lead Quality",
+            "Call Quality",
+            "Recording",
+            "Guidance",
+            "Avatar",
+            "Notes"
+          ],
+          "options": {},
+          "targetRow": "{{sheet.49.rowNumber}}"
+        },
+        "name": "Update Status  Calls ",
+        "type": "google_sheets",
+        "parentKey": "8397a66a-48aa-4bde-8679-80234e25cd50"
+      },
+      {
+        "id": "3196674a-5888-413b-a2d0-c71223d34db7",
+        "parent": "070d81a9-8151-42e5-8c37-eebcb858e7fe",
+        "order": 3,
+        "attributes": {
+          "else": true
+        },
+        "name": "None",
+        "type": "if_else",
+        "cat": "conditions",
+        "sibling": [
+          "e421eed3-0592-44e8-bb90-afb792043da4",
+          "529a3231-f1ae-4c0f-8374-7f9a989293d9",
+          "eaf0e1de-d345-432d-ae75-2e97eb85277b",
+          "c6bf712c-c9dd-4b0b-86b2-a5d81fba6424",
+          "8c00f6fa-cd50-4809-bed0-b476082b20d7",
+          "2586affd-d301-4fdb-8a80-7a6c761c09b3"
+        ],
+        "comments": [],
+        "nodeType": "branch-no",
+        "parentKey": "070d81a9-8151-42e5-8c37-eebcb858e7fe"
+      },
+      {
+        "id": "0e3e040b-953a-4d88-b16a-f151a2102a74",
+        "parent": "4fc69ec9-801e-43a8-92c9-0324eba558a9",
+        "order": 3,
+        "attributes": {
+          "else": true
+        },
+        "name": "None",
+        "type": "if_else",
+        "cat": "conditions",
+        "sibling": [
+          "8574aa4e-94d4-4e3f-896e-11e6acc31b3f"
+        ],
+        "comments": [],
+        "nodeType": "branch-no",
+        "parentKey": "4fc69ec9-801e-43a8-92c9-0324eba558a9"
+      }
+    ]
+  },
+  "permissionMeta": {
+    "canRead": true,
+    "canWrite": true
+  },
+  "scheduledPauseDates": [],
+  "exportedTriggers": [
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "y6NZVUeeJ6vceAA1d0YL"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "cancelled"
+        }
+      ],
+      "date_added": "2026-04-03T17:31:52.099Z",
+      "date_updated": "2026-04-03T17:31:52.099Z",
+      "deleted": false,
+      "id": "AXZRKC9tCYggC3YdgusQ",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Follow Up - Canceled",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    },
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "y6NZVUeeJ6vceAA1d0YL"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "showed"
+        }
+      ],
+      "date_added": "2026-04-03T17:02:34.175Z",
+      "date_updated": "2026-04-03T17:31:52.160Z",
+      "deleted": false,
+      "id": "QF8uvX5AylROEdqrHw8e",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Follow Up - Showed",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    },
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "JnC2s3WRw8BGgRb085O0"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "noshow"
+        }
+      ],
+      "date_added": "2026-04-03T17:09:58.080Z",
+      "date_updated": "2026-04-03T17:31:52.220Z",
+      "deleted": false,
+      "id": "i3EuCxgMv518OCGmHqLU",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Strategy Call - No Show",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    },
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "JnC2s3WRw8BGgRb085O0"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "showed"
+        }
+      ],
+      "date_added": "2026-03-26T14:32:02.567Z",
+      "date_updated": "2026-04-03T17:31:52.169Z",
+      "deleted": false,
+      "id": "pVLdTDUpacIsQ0MyCn8W",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Strategy Call - Showed",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    },
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "y6NZVUeeJ6vceAA1d0YL"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "noshow"
+        }
+      ],
+      "date_added": "2026-04-03T17:09:58.093Z",
+      "date_updated": "2026-04-03T17:31:52.219Z",
+      "deleted": false,
+      "id": "qBifVU1wRWHttAJlvwDn",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Follow Up - No Show",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    },
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "appointment.eventType",
+          "operator": "==",
+          "title": "Event Type",
+          "type": "select",
+          "value": "any"
+        },
+        {
+          "field": "calendar.id",
+          "operator": "==",
+          "title": "In calendar",
+          "type": "select",
+          "value": "JnC2s3WRw8BGgRb085O0"
+        },
+        {
+          "field": "contactMode",
+          "operator": "is-any-of",
+          "type": "input",
+          "value": [
+            "contact"
+          ]
+        },
+        {
+          "field": "appointment.status",
+          "operator": "==",
+          "title": "Appointment status is",
+          "type": "select",
+          "value": "cancelled"
+        }
+      ],
+      "date_added": "2026-04-03T17:31:52.093Z",
+      "date_updated": "2026-04-03T17:31:52.093Z",
+      "deleted": false,
+      "id": "tRoxIf3YjONErsZyZBUY",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Strategy Call - Canceled",
+      "schedule_config": {},
+      "type": "appointment",
+      "workflow_id": "15299dad-ed79-425c-81a1-4c4c38e558de"
+    }
+  ]
+}

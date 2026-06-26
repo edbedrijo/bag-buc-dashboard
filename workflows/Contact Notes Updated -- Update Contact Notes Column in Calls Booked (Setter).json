@@ -1,0 +1,246 @@
+{
+  "_id": "21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "companyId": "Lbvv6aaHg8Iz2t5HYjuB",
+  "companyAge": 20,
+  "name": "Contact Notes Updated -> Update Contact Notes Column in Calls Booked (Setter)",
+  "status": "published",
+  "version": 2,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0/2",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0%2F2?alt=media&token=56c1943a-8872-4085-8050-51d4f333a2da",
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "permission": 380,
+  "type": "workflow",
+  "parentId": "2f8f0b5b-b4f3-4f13-b50c-617f0b2adcbd",
+  "meta": {
+    "stepIndexCounter": {
+      "google_sheets": 2
+    }
+  },
+  "updatedBy": "R3KhnHdARNLgzZzaFRFM",
+  "createdAt": "2026-05-11T14:16:19.006Z",
+  "updatedAt": "2026-05-11T14:19:27.923Z",
+  "deleted": false,
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "isTriggerBucketMigrated": true,
+  "originType": "user",
+  "__v": 0,
+  "eventStartDate": null,
+  "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0/2",
+  "window": null,
+  "workflowNote": null,
+  "id": "21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "823ff60b-199c-462c-858f-a440c2cc4f9f",
+        "stepIndex": 1,
+        "order": 0,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "19",
+            "name": "Calls Booked (Setter)"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "A",
+              "value": "{{contact.id}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Setter",
+            "Guidance",
+            "Avatar",
+            "Booked (Closer)",
+            "Recording",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Lates Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content",
+            "Contact Notes",
+            "utm source (first)",
+            "utm campaign (first)",
+            "utm medium (first)",
+            "utm content (first)",
+            "utm source (last)",
+            "utm campaign (last)",
+            "utm medium (last)",
+            "utm content (last)"
+          ]
+        },
+        "name": "Find GHL Id",
+        "type": "google_sheets",
+        "next": "d8c54080-e4d5-4c91-8a58-0330331330fd"
+      },
+      {
+        "id": "d8c54080-e4d5-4c91-8a58-0330331330fd",
+        "stepIndex": 2,
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "19",
+            "name": "Calls Booked (Setter)"
+          },
+          "columnRange": [
+            "A",
+            "AD"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "{{contact.notescf}}"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Appointment ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Call Date",
+            "Setter",
+            "Guidance",
+            "Avatar",
+            "Booked (Closer)",
+            "Recording",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Lates Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content",
+            "Contact Notes",
+            "utm source (first)",
+            "utm campaign (first)",
+            "utm medium (first)",
+            "utm content (first)",
+            "utm source (last)",
+            "utm campaign (last)",
+            "utm medium (last)",
+            "utm content (last)"
+          ],
+          "targetRow": "{{sheet.1.rowNumber}}",
+          "options": {}
+        },
+        "name": "Update Specific Spreadsheet Row",
+        "type": "google_sheets",
+        "parentKey": "823ff60b-199c-462c-858f-a440c2cc4f9f"
+      }
+    ]
+  },
+  "permissionMeta": {
+    "canRead": true,
+    "canWrite": true
+  },
+  "scheduledPauseDates": [],
+  "exportedTriggers": [
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "contact.IhfRVQfuGnIcXuBLLse0",
+          "id": "IhfRVQfuGnIcXuBLLse0",
+          "operator": "has-changed",
+          "title": "Contact Notes",
+          "type": "string"
+        }
+      ],
+      "date_added": "2026-05-11T14:19:26.920Z",
+      "date_updated": "2026-05-11T14:19:27.551Z",
+      "deleted": false,
+      "id": "Oocr45PKIxW6uy3X23qh",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Contact Changed",
+      "schedule_config": {},
+      "type": "contact_changed",
+      "workflow_id": "21a1ebc6-1be8-4a1c-a6eb-a8765cc949d0"
+    }
+  ]
+}
