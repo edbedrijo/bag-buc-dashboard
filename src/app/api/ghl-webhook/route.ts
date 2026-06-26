@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('call_outcomes')
-    .upsert(record, { onConflict: 'appointment_id' })
+    .upsert(record, { onConflict: 'appointment_id,call_date' })
     .select()
     .single()
 
