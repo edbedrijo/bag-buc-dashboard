@@ -38,14 +38,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // GHL Webhook action sends a flat payload with custom-mapped fields.
-  // Fields come from the Custom Data section of the GHL Webhook action step.
-  const appointmentId = str(body.appointment_id)
+  // GHL sends the full inbound webhook payload — fields are nested under calendar/customData
+  const calendar   = (body.calendar   ?? {}) as Record<string, unknown>
+  const customData = (body.customData ?? {}) as Record<string, unknown>
+
+  // appointment_id lives at calendar.appointmentId in the nested GHL payload
+  const appointmentId = str(calendar.appointmentId) ?? str(body.appointment_id)
   if (!appointmentId) {
     return NextResponse.json({ error: 'appointment_id is required' }, { status: 400 })
   }
 
-  const closer = str(body.closer)
+  const closer = str(customData.appointment_assigned) ?? str(body.closer)
+  const setter = str(calendar.created_by) ?? str(body.setter)
 
   const record = {
     appointment_id: appointmentId,
@@ -57,19 +61,19 @@ export async function POST(req: NextRequest) {
     last_name:      str(body.last_name),
     email:          str(body.email),
     phone:          str(body.phone),
-    call_date:      str(body.call_date),
-    calendar:       str(body.calendar_name),
-    setter:         str(body.setter),
+    call_date:      str(calendar.startTime) ?? str(body.call_date),
+    calendar:       str(calendar.calendarName) ?? str(body.calendar_name),
+    setter,
     closer,
     call_status:    null,
     call_outcome:   null,
     cash_collected: null,
     total_value:    null,
-    lead_quality:   str(body.lead_quality),
+    lead_quality:   null,
     call_quality:   null,
     recording:      null,
-    guidance:       str(body.guidance),
-    avatar:         str(body.avatar),
+    guidance:       str(customData.guidance) ?? str(body.guidance),
+    avatar:         str(customData.avatar)   ?? str(body.avatar),
   }
 
   const admin = createAdminClient()
