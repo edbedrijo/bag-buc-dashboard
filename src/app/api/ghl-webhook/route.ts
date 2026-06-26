@@ -46,13 +46,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'appointment_id is required' }, { status: 400 })
   }
 
-  const closer = str(cd.closer)
+  const closer    = str(cd.closer)
+  const contactId = str(cd.contact_id)
+
+  // Fetch dateAdded from GHL API so GHL workflow needs no custom code step
+  let dateCreated: string | null = str(cd.date_created) // fallback if fetch fails
+  if (contactId && process.env.GHL_PIT_BUC) {
+    try {
+      const res = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
+          Version: '2021-07-28',
+          Accept: 'application/json',
+        },
+      })
+      if (res.ok) {
+        const json = await res.json() as { contact?: { dateAdded?: string } }
+        const raw  = json.contact?.dateAdded
+        if (raw) {
+          const d   = new Date(raw)
+          const cst = new Date(d.getTime() + -6 * 60 * 60 * 1000)
+          const mm  = String(cst.getUTCMonth() + 1).padStart(2, '0')
+          const dd  = String(cst.getUTCDate()).padStart(2, '0')
+          const yy  = cst.getUTCFullYear()
+          dateCreated = `${mm}/${dd}/${yy}`
+        }
+      }
+    } catch (e) {
+      console.error('[ghl-webhook] failed to fetch contact dateAdded:', e)
+    }
+  }
 
   const record = {
     appointment_id: appointmentId,
-    ghl_id:         str(cd.contact_id),
+    ghl_id:         contactId,
     team_tab:       resolveTeamTab(closer ?? undefined),
-    date_created:   str(cd.date_created),
+    date_created:   dateCreated,
     date_in:        str(cd.date_in),
     first_name:     str(cd.first_name),
     last_name:      str(cd.last_name),
