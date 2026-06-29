@@ -294,7 +294,7 @@
               <label>Call Status</label>
               <select id="buc-call-status">
                 <option value="">— Select —</option>
-                ${o(['Show','No Show','Rescheduled','Canceled'], prefill.callStatus)}
+                ${o(['Scheduled','Show','No Show','Rescheduled','Canceled'], prefill.callStatus)}
               </select>
             </div>
             <div class="om-field">
@@ -558,7 +558,9 @@
             const contactId     = getContactId();
             const appointmentId = currentAppointmentId;
             log('Status-change trigger | status:', status);
-            setTimeout(() => showModal(contactId, appointmentId, 'Appointment status updated', status), 700);
+            const apptData = apptRegistry[appointmentId] || {};
+            const apptSubtitle = apptData.title || apptData.calendarName || 'Appointment status updated';
+            setTimeout(() => showModal(contactId, appointmentId, apptSubtitle, status), 700);
           }
         }, true);
       }
