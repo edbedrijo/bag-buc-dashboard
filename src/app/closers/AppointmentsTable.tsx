@@ -10,10 +10,13 @@ import type { CallOutcome } from '@/types'
 type ColKey =
   | 'ghl_id' | 'appointment_id' | 'date_created' | 'date_in'
   | 'first_name' | 'last_name' | 'email' | 'phone'
-  | 'call_date' | 'calendar' | 'setter' | 'closer'
+  | 'call_date' | 'calendar' | 'setter_last' | 'setter_current' | 'setter_first' | 'closer'
   | 'call_status' | 'call_outcome' | 'cash_collected' | 'total_value'
   | 'lead_quality' | 'call_quality' | 'recording' | 'guidance'
   | 'avatar' | 'notes' | 'jerry_grade' | 'jerry_coaching_note'
+  | 'is_rescheduled'
+  | 'utm_source' | 'utm_campaign' | 'utm_medium' | 'utm_content'
+  | 'latest_att_source' | 'latest_att_channel' | 'latest_att_asset'
 
 interface ColDef {
   key:       ColKey
@@ -33,7 +36,9 @@ const ALL_COLS: ColDef[] = [
   { key: 'phone',              label: 'Phone',              defaultW: 140 },
   { key: 'call_date',          label: 'Call Date',          sortField: 'call_date',      defaultW: 155 },
   { key: 'calendar',           label: 'Calendar',           defaultW: 130 },
-  { key: 'setter',             label: 'Setter',             defaultW: 110 },
+  { key: 'setter_last',        label: 'Setter (Last)',       defaultW: 130 },
+  { key: 'setter_current',    label: 'Setter (Current)',    defaultW: 130 },
+  { key: 'setter_first',      label: 'Setter (First)',      defaultW: 130 },
   { key: 'closer',             label: 'Closer',             defaultW: 110 },
   { key: 'call_status',        label: 'Call Status',        defaultW: 130 },
   { key: 'call_outcome',       label: 'Call Outcome',       defaultW: 175 },
@@ -47,21 +52,35 @@ const ALL_COLS: ColDef[] = [
   { key: 'notes',              label: 'Notes',              defaultW: 200 },
   { key: 'jerry_grade',        label: 'Jerry Grade',        defaultW: 110 },
   { key: 'jerry_coaching_note',label: 'Jerry Coaching Note',defaultW: 220 },
+  { key: 'is_rescheduled',     label: 'Rescheduled',        defaultW: 110 },
+  { key: 'utm_source',         label: 'UTM Source',         defaultW: 140 },
+  { key: 'utm_campaign',       label: 'UTM Campaign',       defaultW: 160 },
+  { key: 'utm_medium',         label: 'UTM Medium',         defaultW: 130 },
+  { key: 'utm_content',        label: 'UTM Content',        defaultW: 160 },
+  { key: 'latest_att_source',  label: 'Latest Att Source',  defaultW: 150 },
+  { key: 'latest_att_channel', label: 'Latest Att Channel', defaultW: 150 },
+  { key: 'latest_att_asset',   label: 'Latest Att Asset',   defaultW: 150 },
 ]
 
 // Visible columns in display order, then hidden ones appended after
 const DEFAULT_ORDER: ColKey[] = [
   'first_name', 'last_name', 'email', 'phone', 'call_date',
-  'setter', 'closer', 'call_status', 'call_outcome',
+  'setter_last', 'closer', 'call_status', 'call_outcome',
   'cash_collected', 'total_value', 'lead_quality', 'call_quality',
   'recording', 'notes', 'jerry_grade', 'jerry_coaching_note',
   // hidden by default — appear in Manage Fields but not in the table
   'ghl_id', 'appointment_id', 'date_created', 'date_in', 'calendar', 'guidance', 'avatar',
+  'is_rescheduled',
+  'utm_source', 'utm_campaign', 'utm_medium', 'utm_content',
+  'latest_att_source', 'latest_att_channel', 'latest_att_asset',
 ]
 
 // Hidden by default
 const DEFAULT_HIDDEN = new Set<ColKey>([
   'ghl_id', 'appointment_id', 'date_created', 'date_in', 'calendar', 'guidance', 'avatar',
+  'is_rescheduled',
+  'utm_source', 'utm_campaign', 'utm_medium', 'utm_content',
+  'latest_att_source', 'latest_att_channel', 'latest_att_asset',
 ])
 
 // First Name cannot be hidden (minimum identifier)
@@ -572,7 +591,7 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
   // Unique filter options + modal lists
   const allStatuses = useMemo(() => [...new Set(rows.map(r => displayStatus(r.call_status)))].sort(), [rows])
   const allClosers  = useMemo(() => [...new Set(rows.map(r => r.closer).filter(Boolean))].sort() as string[], [rows])
-  const allSetters  = useMemo(() => [...new Set(rows.map(r => r.setter).filter(Boolean))].sort() as string[], [rows])
+  const allSetters  = useMemo(() => [...new Set(rows.map(r => r.setter_last).filter(Boolean))].sort() as string[], [rows])
 
   // Filter
   const filtered = useMemo(() => {
@@ -661,8 +680,12 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
         return <span className="whitespace-nowrap text-gray-600">{fmtDateTime(row.call_date)}</span>
       case 'calendar':
         return <TruncCell value={row.calendar ?? ''} className="text-gray-500 text-xs" />
-      case 'setter':
-        return <TruncCell value={row.setter ?? ''} className="text-gray-600" />
+      case 'setter_last':
+        return <TruncCell value={row.setter_last ?? ''} className="text-gray-600" />
+      case 'setter_current':
+        return <TruncCell value={row.setter_current ?? ''} className="text-gray-600" />
+      case 'setter_first':
+        return <TruncCell value={row.setter_first ?? ''} className="text-gray-600" />
       case 'closer':
         return <TruncCell value={row.closer ?? ''} className="text-gray-600" />
       case 'call_status':
@@ -709,6 +732,22 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
           : null
       case 'jerry_coaching_note':
         return <TruncCell value={row.jerry_coaching_note ?? ''} className="text-gray-500 text-xs" />
+      case 'is_rescheduled':
+        return <span className="text-gray-500 text-xs">{row.is_rescheduled ? 'Yes' : 'No'}</span>
+      case 'utm_source':
+        return <TruncCell value={row.utm_source ?? ''} className="text-gray-500 text-xs" />
+      case 'utm_campaign':
+        return <TruncCell value={row.utm_campaign ?? ''} className="text-gray-500 text-xs" />
+      case 'utm_medium':
+        return <TruncCell value={row.utm_medium ?? ''} className="text-gray-500 text-xs" />
+      case 'utm_content':
+        return <TruncCell value={row.utm_content ?? ''} className="text-gray-500 text-xs" />
+      case 'latest_att_source':
+        return <TruncCell value={row.latest_att_source ?? ''} className="text-gray-500 text-xs" />
+      case 'latest_att_channel':
+        return <TruncCell value={row.latest_att_channel ?? ''} className="text-gray-500 text-xs" />
+      case 'latest_att_asset':
+        return <TruncCell value={row.latest_att_asset ?? ''} className="text-gray-500 text-xs" />
       default:
         return null
     }

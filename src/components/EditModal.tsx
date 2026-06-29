@@ -69,7 +69,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
       ? new Date(row.call_date).toISOString().slice(0, 16)
       : '',
     closer:              row.closer              ?? '',
-    setter:              row.setter              ?? '',
+    setter_last:         row.setter_last         ?? '',
     call_status:         row.call_status         ?? '',
     call_outcome:        row.call_outcome        ?? '',
     cash_collected:      row.cash_collected      != null ? String(row.cash_collected) : '',
@@ -100,7 +100,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
       date_in:             form.date_in             || null,
       call_date:           form.call_date           ? new Date(form.call_date).toISOString() : null,
       closer:              form.closer              || null,
-      setter:              form.setter              || null,
+      setter_last:         form.setter_last         || null,
       call_status:         form.call_status         || null,
       call_outcome:        form.call_outcome        || null,
       cash_collected:      form.cash_collected      ? parseFloat(form.cash_collected)  : null,
@@ -212,8 +212,8 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
                 {closers.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Setter">
-              <select value={form.setter} onChange={e => set('setter', e.target.value)} className={inputCls}>
+            <Field label="Setter (Last)">
+              <select value={form.setter_last} onChange={e => set('setter_last', e.target.value)} className={inputCls}>
                 <option value="">— select —</option>
                 {setters.map(s => <option key={s} value={s}>{s}</option>)}
               </select>

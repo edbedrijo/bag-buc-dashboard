@@ -1,0 +1,82 @@
+{
+  "_id": "buc-supabase-status-update",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "name": "BUC — Show/No Show/Canceled → Supabase",
+  "status": "draft",
+  "version": 1,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "type": "workflow",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "buc-status-step-1",
+        "order": 0,
+        "attributes": {
+          "method": "POST",
+          "url": "https://bag-buc-dashboard.vercel.app/api/ghl-webhook",
+          "customData": [
+            { "key": "action",          "value": "update_status" },
+            { "key": "appointment_id",  "value": "{{appointment.id}}" },
+            { "key": "contact_id",      "value": "{{contact.id}}" },
+            { "key": "call_status",     "value": "{{appointment.status}}" },
+            { "key": "call_date",       "value": "{{appointment.startTime}}" }
+          ],
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "name": "Send status to Supabase",
+        "type": "webhook",
+        "next": null
+      }
+    ]
+  },
+  "exportedTriggers": [
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "JnC2s3WRw8BGgRb085O0" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Call - Show/No-Show/Cancel",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "CAb3mcR2YELxrqa73zuD" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Follow Up - Show/No-Show/Cancel",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "y6NZVUeeJ6vceAA1d0YL" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Closer Follow Up - Show/No-Show/Cancel",
+      "type": "appointment"
+    }
+  ]
+}

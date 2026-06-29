@@ -8,6 +8,34 @@ function parseNumber(val: string | number | undefined): number | null {
   return isNaN(n) ? null : n
 }
 
+function resolveTeamTab(closer: string | undefined): string | null {
+  if (!closer) return null
+  const name = closer.toLowerCase()
+  if (name.includes('tim'))                               return "Tim's Team"
+  if (name.includes('mark'))                              return "Mark's Team"
+  if (name.includes('mikey') || name.includes('michael')) return "Mikey's Team"
+  if (name.includes('ilya'))                              return "Ilya's Team"
+  if (name.includes('joey'))                              return "Joey's Team"
+  return null
+}
+
+async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string) {
+  if (!process.env.GHL_PIT_BUC) return
+  try {
+    await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
+        Version: '2021-07-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ appointmentStatus: callStatus.toLowerCase().replace(' ', '_') }),
+    })
+  } catch (e) {
+    console.error('[log-outcome] GHL appointment PATCH failed:', e)
+  }
+}
+
 export async function POST(req: NextRequest) {
   let body: LogOutcomePayload
 
@@ -21,26 +49,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'appointmentId is required' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
+  const admin  = createAdminClient()
+  const closer = body.closer ?? null
 
   const { data, error } = await admin
     .from('call_outcomes')
     .upsert(
       {
         appointment_id:      body.appointmentId,
-        ghl_id:              body.contactId ?? null,
-        call_status:         body.callStatus ?? null,
-        call_outcome:        body.callOutcome ?? null,
+        ghl_id:              body.contactId     ?? null,
+        call_date:           body.callDate       ?? null,
+        closer,
+        team_tab:            resolveTeamTab(closer ?? undefined),
+        setter_last:         body.setter         ?? null,
+        call_status:         body.callStatus     ?? null,
+        call_outcome:        body.callOutcome    ?? null,
         cash_collected:      parseNumber(body.cashCollected),
         total_value:         parseNumber(body.totalValue),
-        lead_quality:        body.leadQuality ?? null,
-        call_quality:        body.callQuality ?? null,
-        recording:           body.recording ?? null,
-        notes:               body.notes ?? null,
-        jerry_grade:         body.jerryGrade ?? null,
+        lead_quality:        body.leadQuality    ?? null,
+        call_quality:        body.callQuality    ?? null,
+        recording:           body.recording      ?? null,
+        notes:               body.notes          ?? null,
+        jerry_grade:         body.jerryGrade     ?? null,
         jerry_coaching_note: body.jerryCoachingNote ?? null,
       },
-      { onConflict: 'appointment_id' }
+      { onConflict: 'appointment_id,call_date' }
     )
     .select()
     .single()
@@ -48,6 +81,11 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error('[log-outcome] Supabase error:', error.message)
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Write call_status back to GHL appointment so both stay in sync
+  if (body.callStatus && body.appointmentId) {
+    await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
   }
 
   return NextResponse.json({ success: true, record: data })

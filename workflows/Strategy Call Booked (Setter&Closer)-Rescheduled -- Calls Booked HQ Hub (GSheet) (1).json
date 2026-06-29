@@ -5,13 +5,13 @@
   "companyAge": 19,
   "name": "Strategy Call Booked (Setter&Closer)/Rescheduled -> Calls Booked HQ Hub (GSheet)",
   "status": "published",
-  "version": 24,
+  "version": 28,
   "dataVersion": 7,
   "allowMultiple": true,
   "timezone": "account",
   "removeContactFromLastStep": true,
-  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/20627dad-74f0-4620-8aff-79df10b185a5/24",
-  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F20627dad-74f0-4620-8aff-79df10b185a5%2F24?alt=media&token=8375e284-52e9-4e5c-8df3-e7d44886d917",
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/20627dad-74f0-4620-8aff-79df10b185a5/28",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F20627dad-74f0-4620-8aff-79df10b185a5%2F28?alt=media&token=9e8d1d4e-bbda-41b1-abc6-ba2b91c08e76",
   "stopOnResponse": false,
   "autoMarkAsRead": false,
   "permission": 380,
@@ -25,7 +25,7 @@
   },
   "updatedBy": "R3KhnHdARNLgzZzaFRFM",
   "createdAt": "2026-03-26T04:27:03.108Z",
-  "updatedAt": "2026-06-13T15:02:09.297Z",
+  "updatedAt": "2026-06-29T06:42:10.264Z",
   "deleted": false,
   "allowMultipleOpportunity": true,
   "creationSource": "builder",
@@ -140,7 +140,7 @@
           "branches": [
             {
               "id": "635f01c5-5208-4a02-95a6-68ab92b7b85b",
-              "name": "User/Customer Updated - Strategy Call Closer",
+              "name": "(Closer)User/Customer Updated - Strategy Call",
               "segments": [
                 {
                   "__segmentId": "d7fe4b48-0d28-4b9f-a8d8-959eb872a83f",
@@ -291,7 +291,7 @@
             },
             {
               "id": "80bf6909-edae-4606-8a99-3343b7e66091",
-              "name": "User Updated - Strategy Call Setter",
+              "name": "(Setter) User Updated - Strategy Call ",
               "segments": [
                 {
                   "__segmentId": "d7fe4b48-0d28-4b9f-a8d8-959eb872a83f",
@@ -402,7 +402,7 @@
           "operator": "and",
           "branches": []
         },
-        "name": "User/Customer Updated - Strategy Call Closer",
+        "name": "(Closer)User/Customer Updated - Strategy Call",
         "type": "if_else",
         "cat": "conditions",
         "next": "50c8be25-a005-4b21-b707-d002b061f491",
@@ -555,7 +555,7 @@
         "next": "dce8cbf2-7f7f-44c3-af8e-0248c1863a4c",
         "parentKey": "b23a921f-c5ab-4afe-8e40-ca9d84b0cc93",
         "advanceCanvasMeta": {
-          "isDisabled": false
+          "isDisabled": true
         }
       },
       {
@@ -629,13 +629,107 @@
         },
         "name": "Find record in Calls Booked(Closer)",
         "type": "google_sheets",
-        "next": "26e32b0e-980a-4886-aed4-abb586eb6507",
+        "next": "1629dbd6-5937-4f03-9cac-9260400f5bfd",
         "parentKey": "b03945a6-9d98-4519-b944-6eacc254657f"
       },
       {
-        "id": "26e32b0e-980a-4886-aed4-abb586eb6507",
+        "id": "1629dbd6-5937-4f03-9cac-9260400f5bfd",
         "parent": "69327730-3a75-40d2-87a0-a40439af98f5",
         "order": 3,
+        "attributes": {
+          "currentRecipeType": "CUSTOM",
+          "branches": [
+            {
+              "id": "ff4395be-f98c-4bce-a413-5beb85fa8dc6",
+              "name": "Yes",
+              "segments": [
+                {
+                  "__segmentId": "b66822a6-8ba7-4807-ace1-e0ad6b2ea909",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "sheet",
+                      "conditionSubType": "1.A",
+                      "conditionOperator": "has_value",
+                      "__conditionId": "c57b463d-0b89-4c30-843f-75eb93221199",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            }
+          ],
+          "operator": "and",
+          "if": true,
+          "conditionName": "Row Found?",
+          "version": 2,
+          "noneBranchName": "No"
+        },
+        "name": "yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": [
+          "ff4395be-f98c-4bce-a413-5beb85fa8dc6",
+          "10cf57a2-5d23-4524-adc0-e439d378b105"
+        ],
+        "comments": [],
+        "nodeType": "condition-node",
+        "parentKey": "dce8cbf2-7f7f-44c3-af8e-0248c1863a4c"
+      },
+      {
+        "id": "ff4395be-f98c-4bce-a413-5beb85fa8dc6",
+        "parent": "1629dbd6-5937-4f03-9cac-9260400f5bfd",
+        "order": 4,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "26e32b0e-980a-4886-aed4-abb586eb6507",
+        "sibling": [
+          "10cf57a2-5d23-4524-adc0-e439d378b105"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "1629dbd6-5937-4f03-9cac-9260400f5bfd"
+      },
+      {
+        "id": "26e32b0e-980a-4886-aed4-abb586eb6507",
+        "parent": "ff4395be-f98c-4bce-a413-5beb85fa8dc6",
+        "order": 0,
         "attributes": {
           "currentRecipeType": "CUSTOM",
           "branches": [
@@ -703,12 +797,12 @@
         ],
         "comments": [],
         "nodeType": "condition-node",
-        "parentKey": "dce8cbf2-7f7f-44c3-af8e-0248c1863a4c"
+        "parentKey": "ff4395be-f98c-4bce-a413-5beb85fa8dc6"
       },
       {
         "id": "da82f331-9c49-4f2d-81f3-1e05c45daeaa",
         "parent": "26e32b0e-980a-4886-aed4-abb586eb6507",
-        "order": 4,
+        "order": 1,
         "attributes": {
           "if": false,
           "conditionName": "Condition",
@@ -2810,7 +2904,7 @@
       {
         "id": "84787755-86ac-46ba-8479-be9da74de392",
         "parent": "26e32b0e-980a-4886-aed4-abb586eb6507",
-        "order": 4,
+        "order": 1,
         "attributes": {
           "else": true
         },
@@ -2939,6 +3033,92 @@
         "parentKey": "4cfbaf19-4d13-4ff7-84e5-3a29f27b11d6"
       },
       {
+        "id": "10cf57a2-5d23-4524-adc0-e439d378b105",
+        "parent": "1629dbd6-5937-4f03-9cac-9260400f5bfd",
+        "order": 4,
+        "attributes": {
+          "else": true
+        },
+        "name": "No",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "4c3b7aa2-d824-4b27-99cf-0676c7de1682",
+        "sibling": [
+          "ff4395be-f98c-4bce-a413-5beb85fa8dc6"
+        ],
+        "comments": [],
+        "nodeType": "branch-no",
+        "parentKey": "1629dbd6-5937-4f03-9cac-9260400f5bfd"
+      },
+      {
+        "id": "4c3b7aa2-d824-4b27-99cf-0676c7de1682",
+        "parent": "10cf57a2-5d23-4524-adc0-e439d378b105",
+        "order": 0,
+        "attributes": {
+          "method": "POST",
+          "url": "https://services.leadconnectorhq.com/hooks/n2gK5CxzjJj4tNIfcKHw/webhook-trigger/8498bb83-1d53-4396-a038-da2c3da77bd7",
+          "customData": [
+            {
+              "key": "utm_source",
+              "value": "{{contact.utm_source}}"
+            },
+            {
+              "key": "utm_campaign",
+              "value": "{{contact.utm_campaign}}"
+            },
+            {
+              "key": "utm_medium",
+              "value": "{{contact.utm_medium}}"
+            },
+            {
+              "key": "utm_content",
+              "value": "{{contact.utm_content}}"
+            },
+            {
+              "key": "latestTrafficSource",
+              "value": "{{contact.latest_traffic_source}}"
+            },
+            {
+              "key": "appointment_assigned",
+              "value": "{{appointment.user.name}}"
+            },
+            {
+              "key": "latestChannelSource",
+              "value": "{{contact.latest_channel_source}}"
+            },
+            {
+              "key": "latestAssetSource",
+              "value": "{{contact.latest_asset_source}}"
+            },
+            {
+              "key": "guidance",
+              "value": "{{contact.guidance}}"
+            },
+            {
+              "key": "avatar",
+              "value": "{{contact.avatar}}"
+            }
+          ],
+          "headers": []
+        },
+        "name": "Send Webhook to Tracking Sheet",
+        "type": "webhook",
+        "next": "69df23e1-fef5-4955-ad77-32606b936ecc",
+        "parentKey": "10cf57a2-5d23-4524-adc0-e439d378b105"
+      },
+      {
+        "id": "69df23e1-fef5-4955-ad77-32606b936ecc",
+        "parent": "10cf57a2-5d23-4524-adc0-e439d378b105",
+        "order": 1,
+        "attributes": {
+          "targetNodeId": "517bdfc8-525d-4215-a2c6-6f4a374818ef",
+          "type": "goto"
+        },
+        "name": "Go to",
+        "type": "goto",
+        "parentKey": "4c3b7aa2-d824-4b27-99cf-0676c7de1682"
+      },
+      {
         "id": "255bd6cb-bace-4b1a-be16-76a92227268a",
         "parent": "50c8be25-a005-4b21-b707-d002b061f491",
         "order": 1,
@@ -2965,7 +3145,7 @@
           "operator": "and",
           "branches": []
         },
-        "name": "User Updated - Strategy Call Setter",
+        "name": "(Setter) User Updated - Strategy Call ",
         "type": "if_else",
         "cat": "conditions",
         "next": "55d2ca15-f386-459c-bd70-6a6fa4aeb034",
@@ -3086,7 +3266,7 @@
         "next": "8d00bbee-85ff-4a7a-b339-ab6af91d8996",
         "parentKey": "4efffb83-f026-4791-8f01-e5987005bf3d",
         "advanceCanvasMeta": {
-          "isDisabled": false
+          "isDisabled": true
         }
       },
       {

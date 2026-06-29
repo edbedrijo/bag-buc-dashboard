@@ -5,15 +5,15 @@
   "companyAge": 19,
   "name": "Strategy Call Booked (Setter&Closer) Show/No Show -> Calls Booked HQ Hub (GSheet)",
   "status": "published",
-  "version": 21,
+  "version": 22,
   "dataVersion": 7,
   "allowMultiple": true,
   "eventStartDate": null,
   "window": null,
   "timezone": "account",
   "removeContactFromLastStep": true,
-  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/15299dad-ed79-425c-81a1-4c4c38e558de/21",
-  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F15299dad-ed79-425c-81a1-4c4c38e558de%2F21?alt=media&token=03a4a4b1-0274-4743-b1c3-80e2791a0d0d",
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/15299dad-ed79-425c-81a1-4c4c38e558de/22",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F15299dad-ed79-425c-81a1-4c4c38e558de%2F22?alt=media&token=bab08376-651b-4247-a043-634bad03c24d",
   "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/15299dad-ed79-425c-81a1-4c4c38e558de/17",
   "stopOnResponse": false,
   "autoMarkAsRead": false,
@@ -27,7 +27,7 @@
     }
   },
   "createdAt": "2026-03-26T14:28:31.636Z",
-  "updatedAt": "2026-04-20T11:23:41.379Z",
+  "updatedAt": "2026-06-29T05:11:14.181Z",
   "deleted": false,
   "workflowNote": {
     "content": "",
@@ -58,7 +58,10 @@
         },
         "name": "Send webhook to n8n",
         "type": "webhook",
-        "next": "1539dd07-091f-4c90-b180-79c1ef84406b"
+        "next": "1539dd07-091f-4c90-b180-79c1ef84406b",
+        "advanceCanvasMeta": {
+          "isDisabled": true
+        }
       },
       {
         "id": "1539dd07-091f-4c90-b180-79c1ef84406b",

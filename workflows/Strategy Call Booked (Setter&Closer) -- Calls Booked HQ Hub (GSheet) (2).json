@@ -5,7 +5,7 @@
   "companyAge": 19,
   "name": "Strategy Call Booked (Setter&Closer) -> Calls Booked HQ Hub (GSheet)",
   "status": "published",
-  "version": 29,
+  "version": 33,
   "dataVersion": 7,
   "allowMultiple": true,
   "eventStartDate": null,
@@ -17,8 +17,8 @@
   "window": null,
   "timezone": "contact",
   "removeContactFromLastStep": true,
-  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/7dc11f87-3ebd-476e-afe8-2c2f06d501a4/29",
-  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F7dc11f87-3ebd-476e-afe8-2c2f06d501a4%2F29?alt=media&token=812e61ba-690d-48a6-8b18-afaca435316f",
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/7dc11f87-3ebd-476e-afe8-2c2f06d501a4/33",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2F7dc11f87-3ebd-476e-afe8-2c2f06d501a4%2F33?alt=media&token=c6b0dfbd-cb5c-4f2e-ab8c-eff684d21bd4",
   "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/7dc11f87-3ebd-476e-afe8-2c2f06d501a4/6",
   "stopOnResponse": false,
   "autoMarkAsRead": true,
@@ -33,7 +33,7 @@
     }
   },
   "createdAt": "2026-03-19T05:27:52.383Z",
-  "updatedAt": "2026-06-16T15:36:16.959Z",
+  "updatedAt": "2026-06-29T05:08:51.857Z",
   "deleted": false,
   "workflowNote": {
     "content": "",
@@ -1243,7 +1243,7 @@
         "name": "Strategy Call with Arthur & Team - Closer",
         "type": "if_else",
         "cat": "conditions",
-        "next": "caaae0b8-613d-46fb-afb8-8e7e5a87d74a",
+        "next": "edc5e8fe-a78e-454f-9173-513c1dd74079",
         "sibling": [
           "19eeed34-edc6-4a56-9234-5396df968249",
           "bd00ff5a-84df-4302-87a2-0fadb48ef317",
@@ -1254,10 +1254,86 @@
         "parentKey": "24d8878c-cb53-467b-9483-dfbbe6eaaa0a"
       },
       {
+        "id": "edc5e8fe-a78e-454f-9173-513c1dd74079",
+        "parent": "c272cca4-4acb-4c67-b8ec-9d397a0ef2d6",
+        "order": 0,
+        "attributes": {
+          "method": "POST",
+          "url": "https://bag-buc-dashboard.vercel.app/api/ghl-webhook",
+          "customData": [
+            {
+              "key": "appointment_id",
+              "value": "{{inboundWebhookRequest.calendar.appointmentId}}"
+            },
+            {
+              "key": "contact_id",
+              "value": "{{inboundWebhookRequest.contact_id}}"
+            },
+            {
+              "key": "first_name",
+              "value": "{{inboundWebhookRequest.first_name}}"
+            },
+            {
+              "key": "last_name",
+              "value": "{{inboundWebhookRequest.last_name}}"
+            },
+            {
+              "key": "email",
+              "value": "{{inboundWebhookRequest.email}}"
+            },
+            {
+              "key": "phone",
+              "value": "{{inboundWebhookRequest.phone}}"
+            },
+            {
+              "key": "call_date",
+              "value": "{{inboundWebhookRequest.calendar.startTime}}"
+            },
+            {
+              "key": "calendar_name",
+              "value": "{{inboundWebhookRequest.calendar.calendarName}}"
+            },
+            {
+              "key": "setter",
+              "value": "{{inboundWebhookRequest.calendar.created_by}}"
+            },
+            {
+              "key": "closer",
+              "value": "{{inboundWebhookRequest.customData.appointment_assigned}}"
+            },
+            {
+              "key": "date_created",
+              "value": "{{inboundWebhookRequest.date_created}}"
+            },
+            {
+              "key": "guidance",
+              "value": "{{inboundWebhookRequest.Guidance}}"
+            },
+            {
+              "key": "avatar",
+              "value": "{{inboundWebhookRequest.Avatar}}"
+            }
+          ],
+          "headers": [
+            {
+              "key": " Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "name": "send webhook to vercel",
+        "type": "webhook",
+        "next": "caaae0b8-613d-46fb-afb8-8e7e5a87d74a",
+        "parentKey": "c272cca4-4acb-4c67-b8ec-9d397a0ef2d6",
+        "advanceCanvasMeta": {
+          "isDisabled": true
+        }
+      },
+      {
         "id": "caaae0b8-613d-46fb-afb8-8e7e5a87d74a",
         "stepIndex": 68,
         "parent": "c272cca4-4acb-4c67-b8ec-9d397a0ef2d6",
-        "order": 0,
+        "order": 1,
         "attributes": {
           "type": "google_sheets",
           "action": {
@@ -1325,12 +1401,12 @@
         "name": "Check if the Appointment is already in Calls Booked (Closer)",
         "type": "google_sheets",
         "next": "708e9610-8ef8-4b4b-b2a0-47a167f28614",
-        "parentKey": "c272cca4-4acb-4c67-b8ec-9d397a0ef2d6"
+        "parentKey": "edc5e8fe-a78e-454f-9173-513c1dd74079"
       },
       {
         "id": "708e9610-8ef8-4b4b-b2a0-47a167f28614",
         "parent": "c272cca4-4acb-4c67-b8ec-9d397a0ef2d6",
-        "order": 1,
+        "order": 2,
         "attributes": {
           "currentRecipeType": "CUSTOM",
           "branches": [
@@ -1473,7 +1549,7 @@
       {
         "id": "d8a3c8b7-ad0d-49f1-8c6a-1f00ec8324e1",
         "parent": "708e9610-8ef8-4b4b-b2a0-47a167f28614",
-        "order": 2,
+        "order": 3,
         "attributes": {
           "if": false,
           "conditionName": "Condition",
@@ -3367,7 +3443,7 @@
       {
         "id": "6e0846df-3c39-4fc5-84c0-72543d661049",
         "parent": "708e9610-8ef8-4b4b-b2a0-47a167f28614",
-        "order": 2,
+        "order": 3,
         "attributes": {
           "else": true
         },

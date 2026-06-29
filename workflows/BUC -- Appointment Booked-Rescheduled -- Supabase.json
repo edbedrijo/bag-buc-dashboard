@@ -1,0 +1,138 @@
+{
+  "_id": "buc-supabase-booked-rescheduled",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "name": "BUC — Appointment Booked/Rescheduled → Supabase",
+  "status": "draft",
+  "version": 1,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "type": "workflow",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "buc-sb-step-1",
+        "order": 0,
+        "attributes": {
+          "method": "POST",
+          "url": "https://bag-buc-dashboard.vercel.app/api/ghl-webhook",
+          "customData": [
+            { "key": "action",          "value": "upsert" },
+            { "key": "appointment_id",  "value": "{{appointment.id}}" },
+            { "key": "contact_id",      "value": "{{contact.id}}" },
+            { "key": "first_name",      "value": "{{contact.first_name}}" },
+            { "key": "last_name",       "value": "{{contact.last_name}}" },
+            { "key": "email",           "value": "{{contact.email}}" },
+            { "key": "phone",           "value": "{{contact.phone}}" },
+            { "key": "call_date",       "value": "{{appointment.startTime}}" },
+            { "key": "calendar_name",   "value": "{{appointment.title}}" },
+            { "key": "closer",          "value": "{{appointment.user.name}}" },
+            { "key": "setter_last",     "value": "{{contact.setter_last}}" },
+            { "key": "setter_current",  "value": "{{contact.setter_current}}" },
+            { "key": "setter_first",    "value": "{{contact.setter_first}}" },
+            { "key": "date_in",         "value": "{{right_now.middle_endian_date}}" },
+            { "key": "guidance",        "value": "{{contact.guidance}}" },
+            { "key": "avatar",          "value": "{{contact.avatar}}" }
+          ],
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "name": "Send to Supabase (upsert)",
+        "type": "webhook",
+        "next": null
+      }
+    ]
+  },
+  "exportedTriggers": [
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "user" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "JnC2s3WRw8BGgRb085O0" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Call - Booked/Updated by User",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "customer" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "JnC2s3WRw8BGgRb085O0" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Call - Rescheduled by Customer",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "user" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "CAb3mcR2YELxrqa73zuD" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Follow Up - Booked/Updated by User",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "customer" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "CAb3mcR2YELxrqa73zuD" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Strategy Follow Up - Rescheduled by Customer",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "user" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "y6NZVUeeJ6vceAA1d0YL" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Closer Follow Up - Booked/Updated by User",
+      "type": "appointment"
+    },
+    {
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
+        { "field": "appointment.status",    "operator": "==", "title": "Appointment status is", "type": "select", "value": "confirmed" },
+        { "field": "appointment.modifiedBy","operator": "==", "title": "Created By/Modified By", "type": "select", "value": "customer" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "y6NZVUeeJ6vceAA1d0YL" },
+        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
+      ],
+      "masterType": "highlevel",
+      "name": "Closer Follow Up - Rescheduled by Customer",
+      "type": "appointment"
+    }
+  ]
+}

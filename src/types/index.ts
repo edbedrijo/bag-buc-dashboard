@@ -18,7 +18,9 @@ export interface CallOutcome {
   phone: string | null
   call_date: string | null
   calendar: string | null
-  setter: string | null
+  setter_first: string | null
+  setter_current: string | null
+  setter_last: string | null
   closer: string | null
   call_status: string | null
   call_outcome: string | null
@@ -29,6 +31,14 @@ export interface CallOutcome {
   recording: string | null
   guidance: string | null
   avatar: string | null
+  is_rescheduled: boolean | null
+  utm_source: string | null
+  utm_campaign: string | null
+  utm_medium: string | null
+  utm_content: string | null
+  latest_att_source: string | null
+  latest_att_channel: string | null
+  latest_att_asset: string | null
   notes: string | null
   jerry_grade: string | null
   jerry_coaching_note: string | null
@@ -40,6 +50,9 @@ export interface CallOutcome {
 export interface LogOutcomePayload {
   appointmentId: string
   contactId?: string
+  callDate?: string        // ISO string — used as second key for rescheduled appointments
+  closer?: string
+  setter?: string          // maps to setter_last
   locationId?: string
   triggeredAt?: string
   callStatus?: string

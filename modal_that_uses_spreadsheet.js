@@ -1,9 +1,10 @@
 <script>
 (function () {
   // ─── CONFIG ───────────────────────────────────────────────────────────────
-  const LOCATION_ID    = "SwbNBq7ED4YQbSmTeva8";
-  const DASHBOARD_URL  = "https://bag-buc-dashboard.vercel.app";
-  const DEBUG          = true;
+  const LOCATION_ID = "SwbNBq7ED4YQbSmTeva8";
+  const WEBHOOK_URL = "https://n8n.srv1021441.hstgr.cloud/webhook/791ebe05-19c3-41d5-ad2c-8de75009948c";
+  const SHEET_ID    = "1y-tME_4wRhoFeLozOcnfNflznECa1Qp6NAGUeM2cKVc";
+  const DEBUG       = true;
 
   // Calendars that show the Log Outcome button
   const TARGET_CALENDARS = [
@@ -11,13 +12,28 @@
     "strategy follow up"
   ];
 
-  // Closer keyword → display name (used to detect logged-in user)
+  // Closer name (as it appears in GHL) → Sheet tab name
   const CLOSER_TAB_MAP = {
     "tim":   "Tim's Team",
     "mark":  "Mark's Team",
     "mikey": "Mikey's Team",
     "ilya":  "Ilya's Team",
     "joey":  "Joey's Team"
+  };
+
+  // Column header names as they appear in the sheet (exact match)
+  const APPT_ID_HEADER = "Appointment ID";
+  const COL_HEADERS = {
+    callStatus:     "Call Status",
+    callOutcome:    "Call Outcome",
+    cashCollected:  "Cash Collected",
+    totalValue:     "Total Value",
+    leadQuality:    "Lead Quality",
+    callQuality:    "Call Quality",
+    recording:      "Recording",
+    notes:          "Notes",
+    jerryGrade:     "Jerry Grade",
+    jerryCoachNote: "Jerry Coaching Note"
   };
 
   function log(...args) { if (DEBUG) console.log('[OutcomeModal]', ...args); }
@@ -39,6 +55,7 @@
   const apptRegistry = {};
 
   function cleanApptId(rawId) {
+    // GHL stores composite keys like "apptId_contactId" — strip the contact suffix
     if (!rawId) return null;
     return rawId.split('_')[0];
   }
@@ -125,14 +142,69 @@
     return null;
   }
 
-  // ─── FETCH ROW FROM SUPABASE (via dashboard API) ──────────────────────────
-  async function fetchRowFromSupabase(appointmentId, contactId, callDate) {
-    const params = new URLSearchParams({ appointmentId });
-    if (contactId) params.set('contactId', contactId);
-    if (callDate)  params.set('callDate', callDate);
-    const res = await fetch(`${DASHBOARD_URL}/api/call-outcome?${params}`);
-    if (!res.ok) throw new Error('Supabase fetch failed: ' + res.status);
-    return res.json(); // { found, record }
+  // ─── FETCH SHEET CSV ──────────────────────────────────────────────────────
+  async function fetchSheetCSV(tabName) {
+    const encoded = encodeURIComponent(tabName);
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encoded}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('CSV fetch failed for tab: ' + tabName);
+    return res.text();
+  }
+
+  function parseCSV(text) {
+    return text.split('\n').map(line => {
+      const cols = [];
+      let cur = '', inQuote = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQuote = !inQuote; }
+        else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur.trim());
+      return cols;
+    });
+  }
+
+  function buildColMap(headerRow) {
+    const map = { apptId: -1 };
+    headerRow.forEach((h, i) => {
+      const clean = h.replace(/^"|"$/g, '').trim();
+      if (clean === APPT_ID_HEADER) map.apptId = i;
+      for (const [key, name] of Object.entries(COL_HEADERS)) {
+        if (clean === name) map[key] = i;
+      }
+    });
+    return map;
+  }
+
+  async function findRowByAppointmentId(apptId) {
+    const primaryTab = getLoggedInCloserTab();
+    const allTabs = Object.values(CLOSER_TAB_MAP);
+    const tabOrder = primaryTab
+      ? [primaryTab, ...allTabs.filter(t => t !== primaryTab)]
+      : allTabs;
+
+    for (const tab of tabOrder) {
+      log('Searching tab:', tab);
+      try {
+        const csv = await fetchSheetCSV(tab);
+        const rows = parseCSV(csv);
+        if (rows.length < 2) continue;
+        const colMap = buildColMap(rows[0]);
+        if (colMap.apptId === -1) { log('Appointment ID column not found in tab:', tab); continue; }
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const cellVal = (row[colMap.apptId] || '').replace(/^"|"$/g, '').trim();
+          if (cellVal === apptId) {
+            log('Found row in tab:', tab, '| row index:', i);
+            return { row, tab, colMap };
+          }
+        }
+      } catch (e) { log('Error fetching tab:', tab, e); }
+    }
+    log('Appointment ID not found in any tab.');
+    return null;
   }
 
   // ─── STYLES ───────────────────────────────────────────────────────────────
@@ -239,6 +311,7 @@
 
   function formatApptDateTime(isoString) {
     if (!isoString) return '';
+    // Parse directly from ISO string — avoid new Date() UTC conversion
     const [datePart, timePart] = isoString.split('T');
     if (!datePart) return '';
     const [y, m, d] = datePart.split('-');
@@ -249,12 +322,6 @@
     const h12  = ((h % 12) || 12);
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return `${months[parseInt(m,10)-1]} ${parseInt(d,10)}, ${y} · ${h12}:${minStr} ${ampm}`;
-  }
-
-  // Returns call date as ISO string for use as the composite key
-  function getCallDateISO(isoString) {
-    if (!isoString) return '';
-    return isoString; // already ISO — pass directly to API
   }
 
   // ─── BUILD MODAL HTML ─────────────────────────────────────────────────────
@@ -381,47 +448,15 @@
     return overlay;
   }
 
-  // ─── PREFILL MODAL FROM SUPABASE ROW ──────────────────────────────────────
-  function applyPrefill(record) {
-    if (!record) return;
-    const fields = {
-      'buc-call-status':    record.call_status,
-      'buc-call-outcome':   record.call_outcome,
-      'buc-cash-collected': record.cash_collected != null ? String(record.cash_collected) : '',
-      'buc-total-value':    record.total_value    != null ? String(record.total_value)    : '',
-      'buc-lead-quality':   record.lead_quality,
-      'buc-call-quality':   record.call_quality,
-      'buc-recording':      record.recording,
-      'buc-notes':          record.notes,
-      'buc-jerry-grade':    record.jerry_grade,
-      'buc-jerry-note':     record.jerry_coaching_note,
-      'buc-closer':         record.closer,
-      'buc-setter':         record.setter_last,
-    };
-    for (const [id, val] of Object.entries(fields)) {
-      if (!val) continue;
-      const el = document.getElementById(id);
-      if (!el) continue;
-      if (el.tagName === 'SELECT') {
-        for (const opt of el.options) {
-          if (opt.text === String(val) || opt.value === String(val)) { opt.selected = true; break; }
-        }
-      } else {
-        el.value = val;
-      }
-    }
-    log('Pre-filled from Supabase.');
-  }
-
   // ─── SHOW MODAL ───────────────────────────────────────────────────────────
   async function showModal(contactId, appointmentId, subtitle, statusOverride) {
     if (document.getElementById('buc-outcome-overlay')) return;
     log('Showing modal | contactId:', contactId, '| appointmentId:', appointmentId);
 
+    // Resolve appointment name and formatted date/time for the header
     const apptData     = apptRegistry[appointmentId] || {};
     const apptName     = subtitle || apptData.title || '';
     const apptDateTime = formatApptDateTime(apptData.startTime || apptData.start || '');
-    const callDateISO  = getCallDateISO(apptData.startTime || apptData.start || '');
 
     // Detect closer from logged-in user
     const closerTab   = getLoggedInCloserTab();
@@ -432,7 +467,10 @@
     };
     const detectedCloser = closerTab ? (closerNames[closerTab] || '') : '';
 
-    const overlay = buildModal(apptName, apptDateTime, { _loading: !!appointmentId, closer: detectedCloser });
+    const overlay = buildModal(apptName, apptDateTime, {
+      _loading: true,
+      closer:   detectedCloser,
+    });
     document.body.appendChild(overlay);
 
     const submitBtn  = document.getElementById('buc-submit-btn');
@@ -441,60 +479,89 @@
     const loadingMsg = document.getElementById('buc-loading-msg');
 
     document.getElementById('buc-close-btn').addEventListener('click', () => overlay.remove());
-    document.getElementById('buc-skip-btn').addEventListener('click',  () => overlay.remove());
+    document.getElementById('buc-skip-btn').addEventListener('click', () => overlay.remove());
 
-    // Pre-fill from Supabase
     if (appointmentId) {
-      fetchRowFromSupabase(appointmentId, contactId, callDateISO)
-        .then(({ record }) => {
-          if (loadingMsg) loadingMsg.remove();
-          applyPrefill(record);
-          if (statusOverride) {
-            const el = document.getElementById('buc-call-status');
-            if (el) for (const opt of el.options) {
-              if (opt.text.toLowerCase() === statusOverride.toLowerCase()) { opt.selected = true; break; }
+      findRowByAppointmentId(appointmentId).then(result => {
+        if (loadingMsg) loadingMsg.remove();
+        if (result) {
+          const { row, colMap } = result;
+          const get = (key) => {
+            const idx = colMap[key];
+            return (idx !== undefined && idx !== -1) ? (row[idx] || '').replace(/^"|"$/g, '').trim() : '';
+          };
+          const fields = {
+            'buc-call-status':    get('callStatus'),
+            'buc-call-outcome':   get('callOutcome'),
+            'buc-cash-collected': get('cashCollected'),
+            'buc-total-value':    get('totalValue'),
+            'buc-lead-quality':   get('leadQuality'),
+            'buc-call-quality':   get('callQuality'),
+            'buc-recording':      get('recording'),
+            'buc-notes':          get('notes'),
+            'buc-jerry-grade':    get('jerryGrade'),
+            'buc-jerry-note':     get('jerryCoachNote'),
+          };
+          for (const [id, val] of Object.entries(fields)) {
+            const el = document.getElementById(id);
+            if (!el || !val) continue;
+            if (el.tagName === 'SELECT') {
+              for (const opt of el.options) {
+                if (opt.text === val) { opt.selected = true; break; }
+              }
+            } else {
+              el.value = val;
             }
           }
-        })
-        .catch(err => {
-          log('Pre-fill error:', err);
-          if (loadingMsg) loadingMsg.remove();
-        });
+          log('Pre-filled from sheet.');
+        } else {
+          log('No existing row — blank modal.');
+        }
+        if (statusOverride) {
+          const el = document.getElementById('buc-call-status');
+          if (el) for (const opt of el.options) {
+            if (opt.text.toLowerCase() === statusOverride.toLowerCase()) { opt.selected = true; break; }
+          }
+        }
+      }).catch(err => {
+        log('Pre-fill error:', err);
+        if (loadingMsg) loadingMsg.remove();
+      });
+    } else {
+      if (loadingMsg) loadingMsg.remove();
     }
 
-    // Submit
     submitBtn.addEventListener('click', async () => {
       const payload = {
-        appointmentId:    appointmentId || null,
         contactId,
-        callDate:         callDateISO   || null,
-        locationId:       LOCATION_ID,
-        triggeredAt:      new Date().toISOString(),
-        callStatus:       document.getElementById('buc-call-status').value,
-        callOutcome:      document.getElementById('buc-call-outcome').value,
-        closer:           document.getElementById('buc-closer').value,
-        setter:           document.getElementById('buc-setter').value,
-        cashCollected:    document.getElementById('buc-cash-collected').value,
-        totalValue:       document.getElementById('buc-total-value').value,
-        leadQuality:      document.getElementById('buc-lead-quality').value,
-        callQuality:      document.getElementById('buc-call-quality').value,
-        recording:        document.getElementById('buc-recording').value,
-        notes:            document.getElementById('buc-notes').value,
-        jerryGrade:       document.getElementById('buc-jerry-grade').value,
-        jerryCoachingNote: document.getElementById('buc-jerry-note').value,
+        appointmentId:  appointmentId || null,
+        locationId:     LOCATION_ID,
+        triggeredAt:    new Date().toISOString(),
+        callStatus:     document.getElementById('buc-call-status').value,
+        callOutcome:    document.getElementById('buc-call-outcome').value,
+        closer:         document.getElementById('buc-closer').value,
+        setter:         document.getElementById('buc-setter').value,
+        cashCollected:  document.getElementById('buc-cash-collected').value,
+        totalValue:     document.getElementById('buc-total-value').value,
+        leadQuality:    document.getElementById('buc-lead-quality').value,
+        callQuality:    document.getElementById('buc-call-quality').value,
+        recording:      document.getElementById('buc-recording').value,
+        notes:          document.getElementById('buc-notes').value,
+        jerryGrade:     document.getElementById('buc-jerry-grade').value,
+        jerryCoachNote: document.getElementById('buc-jerry-note').value,
       };
 
       log('Sending payload:', payload);
       submitBtn.disabled = true;
       submitBtn.textContent = 'Saving...';
       successMsg.style.display = 'none';
-      errorMsg.style.display   = 'none';
+      errorMsg.style.display = 'none';
 
       try {
-        const res = await fetch(`${DASHBOARD_URL}/api/log-outcome`, {
-          method:  'POST',
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(payload),
+          body: JSON.stringify(payload)
         });
         if (res.ok) {
           successMsg.style.display = 'block';
@@ -504,10 +571,10 @@
           throw new Error('Non-OK: ' + res.status);
         }
       } catch (err) {
-        log('Submit error:', err);
+        log('Webhook error:', err);
         errorMsg.style.display = 'block';
-        submitBtn.disabled     = false;
-        submitBtn.textContent  = 'Save Outcome';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Outcome';
       }
     });
   }
@@ -597,6 +664,7 @@
         for (const [id, appt] of Object.entries(apptRegistry)) {
           const start = appt.startTime || appt.start || '';
           if (!start) continue;
+          // Parse time directly from ISO string to avoid UTC conversion
           const timePart = start.split('T')[1] || '';
           const [hourStr, minStr] = timePart.split(':');
           const hour = parseInt(hourStr, 10);
@@ -615,7 +683,7 @@
 
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const apptId   = resolveApptId();
+        const apptId  = resolveApptId();
         const subtitle = card.querySelector('[class*="title"], [class*="name"]')?.textContent?.trim() || 'Strategy Call';
         log('Log Outcome button clicked | apptId:', apptId);
         showModal(getContactId(), apptId, subtitle, null);

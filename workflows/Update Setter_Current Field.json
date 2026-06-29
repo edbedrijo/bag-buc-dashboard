@@ -1,0 +1,366 @@
+{
+  "_id": "ea6fe868-0b3e-44ef-b8db-7a707089bc48",
+  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "companyId": "Lbvv6aaHg8Iz2t5HYjuB",
+  "companyAge": 21,
+  "name": "Update Setter_Current Field",
+  "status": "published",
+  "version": 5,
+  "dataVersion": 7,
+  "allowMultiple": true,
+  "timezone": "account",
+  "removeContactFromLastStep": true,
+  "filePath": "location/n2gK5CxzjJj4tNIfcKHw/workflows/ea6fe868-0b3e-44ef-b8db-7a707089bc48/3",
+  "fileUrl": "https://firebasestorage.googleapis.com/v0/b/automation-workflows-production/o/location%2Fn2gK5CxzjJj4tNIfcKHw%2Fworkflows%2Fea6fe868-0b3e-44ef-b8db-7a707089bc48%2F3?alt=media&token=18c230ce-e32d-4bb3-93f5-2d4fac39c372",
+  "stopOnResponse": false,
+  "autoMarkAsRead": false,
+  "permission": 380,
+  "type": "workflow",
+  "parentId": "c529a1e2-b598-4ec2-bda2-601818871671",
+  "meta": {
+    "stepIndexCounter": {
+      "google_sheets": 2
+    }
+  },
+  "updatedBy": "R3KhnHdARNLgzZzaFRFM",
+  "createdAt": "2026-06-16T14:54:01.174Z",
+  "updatedAt": "2026-06-18T15:53:12.949Z",
+  "deleted": false,
+  "allowMultipleOpportunity": true,
+  "creationSource": "builder",
+  "isTriggerBucketMigrated": true,
+  "originType": "user",
+  "__v": 0,
+  "eventStartDate": null,
+  "triggersFilePath": "location/n2gK5CxzjJj4tNIfcKHw/workflow-triggers/ea6fe868-0b3e-44ef-b8db-7a707089bc48/5",
+  "window": null,
+  "workflowNote": null,
+  "id": "ea6fe868-0b3e-44ef-b8db-7a707089bc48",
+  "workflowData": {
+    "templates": [
+      {
+        "id": "60188072-7b31-4de3-8421-0267259f7819",
+        "order": 0,
+        "attributes": {
+          "currentRecipeType": "CUSTOM",
+          "branches": [
+            {
+              "id": "bc21c824-0af3-4311-8f4f-22fc95710154",
+              "name": "Yes",
+              "segments": [
+                {
+                  "__segmentId": "8bdcf27b-6ae2-4b76-8321-00dd760ffb9b",
+                  "operator": "and",
+                  "conditions": [
+                    {
+                      "conditionType": "contact_detail",
+                      "conditionSubType": "s0F82CefcNFxq9riYejO",
+                      "conditionOperator": "has_no_value",
+                      "__conditionId": "b832b56d-4a1d-4604-903e-fe32f71c4b97",
+                      "ifElseNodeId": "",
+                      "__customFieldType__": "standard",
+                      "isWait": false,
+                      "nestedDropdownTypes": [
+                        "inboundWebhookRequest",
+                        "sheet",
+                        "datetime_formatter",
+                        "custom_webhook",
+                        "array_functions",
+                        "ivr_gather",
+                        "ivr_connect_call",
+                        "custom_code",
+                        "ai_agent",
+                        "task-notification"
+                      ],
+                      "allowIsOperatorTypes": [
+                        "contact_reply",
+                        "inboundWebhookRequest",
+                        "custom_webhook",
+                        "custom_code",
+                        "ai_agent",
+                        "contact_detail",
+                        "array_functions",
+                        "appointment",
+                        "service_booking",
+                        "rental_booking"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "operator": "and",
+              "showErrors": false,
+              "branchNameError": "Branch name cannot be empty!"
+            }
+          ],
+          "operator": "and",
+          "if": true,
+          "conditionName": "Check if Setter_Last is Blank",
+          "version": 2,
+          "noneBranchName": "No"
+        },
+        "name": "yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": [
+          "bc21c824-0af3-4311-8f4f-22fc95710154",
+          "13ffba50-4f3f-4e41-a0f1-fd10d595f6c1"
+        ],
+        "comments": [],
+        "nodeType": "condition-node"
+      },
+      {
+        "id": "bc21c824-0af3-4311-8f4f-22fc95710154",
+        "parent": "60188072-7b31-4de3-8421-0267259f7819",
+        "order": 1,
+        "attributes": {
+          "if": false,
+          "conditionName": "Condition",
+          "operator": "and",
+          "branches": []
+        },
+        "name": "Yes",
+        "type": "if_else",
+        "cat": "conditions",
+        "next": "f0489bfd-4f54-4553-8d38-68d88fe1dfa5",
+        "sibling": [
+          "13ffba50-4f3f-4e41-a0f1-fd10d595f6c1"
+        ],
+        "comments": [],
+        "nodeType": "branch-yes",
+        "parentKey": "60188072-7b31-4de3-8421-0267259f7819"
+      },
+      {
+        "id": "f0489bfd-4f54-4553-8d38-68d88fe1dfa5",
+        "parent": "bc21c824-0af3-4311-8f4f-22fc95710154",
+        "order": 0,
+        "attributes": {
+          "type": "update_contact_field",
+          "actionType": "update_field_data",
+          "fields": [
+            {
+              "field": "aCkkPWt99NBwCg8K2evm",
+              "value": "{{user.name}}",
+              "title": "Setter_Current",
+              "type": "string",
+              "date": ""
+            }
+          ]
+        },
+        "name": "Update contact field",
+        "type": "update_contact_field",
+        "next": "4b95a0a0-3878-48d4-9c1c-455c7280310f",
+        "parentKey": "bc21c824-0af3-4311-8f4f-22fc95710154"
+      },
+      {
+        "id": "4b95a0a0-3878-48d4-9c1c-455c7280310f",
+        "stepIndex": 2,
+        "parent": "bc21c824-0af3-4311-8f4f-22fc95710154",
+        "order": 1,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "lookup_row",
+            "name": "Lookup Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "12",
+            "name": "Leads"
+          },
+          "lookupColumns": {
+            "main": {
+              "column": "A",
+              "value": "{{inboundWebhookRequest.contact_id}}"
+            },
+            "extra": {
+              "column": "F",
+              "value": "{{inboundWebhookRequest.email}}"
+            }
+          },
+          "options": {
+            "lookupSearchMethod": "bottom_to_top"
+          },
+          "sheetHeaders": [
+            "GHL ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Funnel",
+            "Applied",
+            "Qualified",
+            "Guidance",
+            "Avatar",
+            "Assigned Setter",
+            "Booked (Setter)",
+            "Booked (Closer)",
+            "Status",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content"
+          ]
+        },
+        "name": "Find Record in Leads Sheet HQ Hub",
+        "type": "google_sheets",
+        "next": "aadf572a-6379-4834-9376-b43f568aafa4",
+        "parentKey": "f0489bfd-4f54-4553-8d38-68d88fe1dfa5"
+      },
+      {
+        "id": "aadf572a-6379-4834-9376-b43f568aafa4",
+        "stepIndex": 1,
+        "parent": "bc21c824-0af3-4311-8f4f-22fc95710154",
+        "order": 2,
+        "attributes": {
+          "type": "google_sheets",
+          "action": {
+            "id": "update_row",
+            "name": "Update Specific Spreadsheet Row"
+          },
+          "account": {
+            "id": "115646463058750497627",
+            "name": "ed@brickellads.io",
+            "idType": "altId"
+          },
+          "drive": {
+            "id": "my_drive",
+            "name": "My Drive"
+          },
+          "spreadsheet": {
+            "id": "1zWCvrRhAuGid8s2oQFQqp8_OvYsEulqEaeNdHkTGEVg",
+            "name": "Build Up HQ Hub 2026"
+          },
+          "sheet": {
+            "id": "12",
+            "name": "Leads"
+          },
+          "columnRange": [
+            "A",
+            "Y"
+          ],
+          "values": [
+            "",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "",
+            "{{user.name}}",
+            "",
+            "Confirmed",
+            "Confirmed"
+          ],
+          "sheetHeaders": [
+            "GHL ID",
+            "Date Created",
+            "Date In",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Funnel",
+            "Applied",
+            "Qualified",
+            "Guidance",
+            "Avatar",
+            "Setter_First",
+            "Setter_Current",
+            "Setter_Last",
+            "Booked (Setter)",
+            "Booked (Closer)",
+            "Status",
+            "Latest Att Source",
+            "Latest Att Channel",
+            "Latest Att Asset",
+            "utm source",
+            "utm campaign",
+            "utm medium",
+            "utm content"
+          ],
+          "targetRow": "{{sheet.42.rowNumber}}",
+          "options": {}
+        },
+        "name": "Update Setter_Current",
+        "type": "google_sheets",
+        "parentKey": "4b95a0a0-3878-48d4-9c1c-455c7280310f"
+      },
+      {
+        "id": "13ffba50-4f3f-4e41-a0f1-fd10d595f6c1",
+        "parent": "60188072-7b31-4de3-8421-0267259f7819",
+        "order": 1,
+        "attributes": {
+          "else": true
+        },
+        "name": "No",
+        "type": "if_else",
+        "cat": "conditions",
+        "sibling": [
+          "bc21c824-0af3-4311-8f4f-22fc95710154"
+        ],
+        "comments": [],
+        "nodeType": "branch-no",
+        "parentKey": "60188072-7b31-4de3-8421-0267259f7819"
+      }
+    ]
+  },
+  "permissionMeta": {
+    "canRead": true,
+    "canWrite": true
+  },
+  "scheduledPauseDates": [],
+  "exportedTriggers": [
+    {
+      "actions": [
+        {
+          "type": "add_to_workflow",
+          "workflow_id": "ea6fe868-0b3e-44ef-b8db-7a707089bc48"
+        }
+      ],
+      "active": true,
+      "belongs_to": "workflow",
+      "conditions": [
+        {
+          "field": "contact.assignedTo",
+          "operator": "has-changed",
+          "title": "Assigned user",
+          "type": "select"
+        }
+      ],
+      "date_added": "2026-06-16T15:26:00.232Z",
+      "date_updated": "2026-06-16T15:26:37.198Z",
+      "deleted": false,
+      "id": "goroAyXdxCaopWx3TStS",
+      "location_id": "n2gK5CxzjJj4tNIfcKHw",
+      "masterType": "highlevel",
+      "name": "Assigned User Changed",
+      "schedule_config": {},
+      "type": "contact_changed",
+      "workflow_id": "ea6fe868-0b3e-44ef-b8db-7a707089bc48"
+    }
+  ]
+}
