@@ -59,56 +59,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, action: 'deleted' })
   }
 
-  const closer    = str(cd.closer)
-  const contactId = str(cd.contact_id)
+  const closer     = str(cd.closer)
+  const contactId  = str(cd.contact_id)
+  const calendarData = (body.calendar ?? {}) as Record<string, unknown>
 
-  // Fetch full contact + appointment from GHL API server-side
-  let dateCreated:    string | null = str(cd.date_created)
-  let apptCreatedBy:  string | null = null   // setter who booked — resolved from appointment API
-  let ghlAppt:        Record<string, unknown> | null = null
+  // setter_last comes from body.calendar.created_by — always populated natively at booking time
+  const setterLast = str(calendarData['created_by']) ?? str(cd.setter_last)
+  // call_date comes from body.calendar.startTime — proper ISO, not the human-readable customData value
+  const callDate   = str(calendarData['startTime']) ?? null
 
-  if (process.env.GHL_PIT_BUC) {
-    const ghlHeaders = {
-      Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
-      Version: '2021-07-28',
-      Accept: 'application/json',
+  // Fetch contact dateAdded from GHL API — only API call we still need
+  let dateCreated: string | null = null
+  if (contactId && process.env.GHL_PIT_BUC) {
+    try {
+      const res = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
+          Version: '2021-07-28',
+          Accept: 'application/json',
+        },
+      })
+      if (res.ok) {
+        const json = await res.json() as { contact?: { dateAdded?: string } }
+        const raw  = json.contact?.dateAdded
+        if (raw) {
+          const d   = new Date(raw)
+          const cst = new Date(d.getTime() + -6 * 60 * 60 * 1000)
+          const mm  = String(cst.getUTCMonth() + 1).padStart(2, '0')
+          const dd  = String(cst.getUTCDate()).padStart(2, '0')
+          const yy  = cst.getUTCFullYear()
+          dateCreated = `${mm}/${dd}/${yy}`
+        }
+      }
+    } catch (e) {
+      console.error('[ghl-webhook] contact fetch error:', e)
     }
-
-    const fetches: Promise<void>[] = []
-
-    if (contactId) {
-      fetches.push(
-        fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, { headers: ghlHeaders })
-          .then(r => r.ok ? r.json() : null)
-          .then((json: { contact?: { dateAdded?: string } } | null) => {
-            const raw = json?.contact?.dateAdded
-            if (raw) {
-              const d   = new Date(raw)
-              const cst = new Date(d.getTime() + -6 * 60 * 60 * 1000)
-              const mm  = String(cst.getUTCMonth() + 1).padStart(2, '0')
-              const dd  = String(cst.getUTCDate()).padStart(2, '0')
-              const yy  = cst.getUTCFullYear()
-              dateCreated = `${mm}/${dd}/${yy}`
-            }
-          })
-          .catch(e => console.error('[ghl-webhook] contact fetch error:', e))
-      )
-    }
-
-    fetches.push(
-      fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, { headers: ghlHeaders })
-        .then(r => r.ok ? r.json() : null)
-        .then((json: { appointment?: Record<string, unknown> } | null) => {
-          if (json?.appointment) {
-            ghlAppt = json.appointment
-            // Try known field names for the booking creator (setter)
-            apptCreatedBy = str(ghlAppt.createdBy ?? ghlAppt.created_by ?? ghlAppt.bookedBy ?? null)
-          }
-        })
-        .catch(e => console.error('[ghl-webhook] appointment fetch error:', e))
-    )
-
-    await Promise.all(fetches)
   }
 
   // Status-only update (Show / No Show / Canceled trigger)
@@ -136,12 +121,9 @@ export async function POST(req: NextRequest) {
     last_name:            str(cd.last_name),
     email:                str(cd.email),
     phone:                str(cd.phone),
-    call_date:            str(cd.call_date) ?? str(ghlAppt?.['startTime']),
+    call_date:            callDate,
     calendar:             str(cd.calendar_name),
-    // apptCreatedBy (from GHL API) is the most reliable setter_last source at booking time
-    setter_last:          apptCreatedBy ?? str(cd.setter_last),
-    // TEMP: dump raw appointment payload into notes so we can inspect field names via Supabase
-    notes:                ghlAppt ? JSON.stringify(ghlAppt) : null,
+    setter_last:          setterLast,
     setter_first:         str(cd.setter_first),
     setter_current:       str(cd.setter_current),
     closer,
