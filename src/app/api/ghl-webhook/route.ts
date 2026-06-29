@@ -72,32 +72,15 @@ export async function POST(req: NextRequest) {
   // Do NOT convert to UTC: display layer splits the string to avoid double-conversion
   const callDate = str(calendarData['startTime'])
 
-  // Fetch contact dateAdded from GHL API — only API call we still need
+  // date_created = contact creation date, already in flat GHL body — no API call needed
   let dateCreated: string | null = null
-  if (contactId && process.env.GHL_PIT_BUC) {
-    try {
-      const res = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
-          Version: '2021-07-28',
-          Accept: 'application/json',
-        },
-      })
-      if (res.ok) {
-        const json = await res.json() as { contact?: { dateAdded?: string } }
-        const raw  = json.contact?.dateAdded
-        if (raw) {
-          const d   = new Date(raw)
-          const cst = new Date(d.getTime() + -6 * 60 * 60 * 1000)
-          const mm  = String(cst.getUTCMonth() + 1).padStart(2, '0')
-          const dd  = String(cst.getUTCDate()).padStart(2, '0')
-          const yy  = cst.getUTCFullYear()
-          dateCreated = `${mm}/${dd}/${yy}`
-        }
-      }
-    } catch (e) {
-      console.error('[ghl-webhook] contact fetch error:', e)
-    }
+  const rawDateCreated = str(body['date_created'])
+  if (rawDateCreated) {
+    const d  = new Date(rawDateCreated)
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const dd = String(d.getUTCDate()).padStart(2, '0')
+    const yy = d.getUTCFullYear()
+    dateCreated = `${mm}/${dd}/${yy}`
   }
 
   // Status-only update (Show / No Show / Canceled trigger)
@@ -120,11 +103,12 @@ export async function POST(req: NextRequest) {
   // On reschedule: mark all existing rows for this appointment as Rescheduled,
   // then insert a fresh row with the new call_date
   if (isRescheduled) {
+    // Mark all existing rows for this appointment as Rescheduled
+    // .neq() won't match NULL rows in SQL, so we update all rows and let the next upsert set the new one
     await admin
       .from('call_outcomes')
       .update({ call_status: 'Rescheduled' })
       .eq('appointment_id', appointmentId)
-      .neq('call_status', 'Rescheduled')
   }
 
   const record = {
