@@ -259,9 +259,10 @@
 
   // ─── BUILD MODAL HTML ─────────────────────────────────────────────────────
   function buildModal(apptName, apptDateTime, prefill = {}) {
-    const o = (options, val) => options.map(opt =>
-      `<option${opt === val ? ' selected' : ''}>${opt}</option>`
-    ).join('');
+    const o = (options, val) => {
+      const list = val && !options.includes(val) ? [...options, val] : options;
+      return list.map(opt => `<option${opt === val ? ' selected' : ''}>${opt}</option>`).join('');
+    };
 
     const closerOptions = ['Tim Coulter','Mark Gillard','Michael Ryan','Ilya Yablonsky','Joey Milewski'];
     const setterOptions = ['Gabe Malang','Ilya Yablonsky','Tim Coulter','Mark Gillard','Michael Ryan','Joey Milewski'];
