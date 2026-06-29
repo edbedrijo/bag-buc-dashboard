@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       .from('call_outcomes')
       .update({ call_status: str(cd.call_status), updated_at: new Date().toISOString() })
       .eq('appointment_id', appointmentId)
-      .neq('call_status', 'Rescheduled')
+      .or('call_status.neq.Rescheduled,call_status.is.null')
       .select()
     if (error) {
       console.error('[ghl-webhook] update_status error:', error.message)
