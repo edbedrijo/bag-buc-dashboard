@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     setter_current:       str(cd.setter_current),
     closer,
     is_rescheduled:       isRescheduled,
-    call_status:          str(cd.call_status) ?? null,
+    call_status:          str(cd.call_status) ?? 'Scheduled',
     call_outcome:         null,
     cash_collected:       null,
     total_value:          null,
