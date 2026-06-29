@@ -85,9 +85,18 @@ export async function POST(req: NextRequest) {
 
   // Status-only update (Show / No Show / Canceled trigger)
   if (str(cd.action) === 'update_status') {
+    const statusMap: Record<string, string> = {
+      showed:    'Show',
+      noshow:    'No Show',
+      cancelled: 'Canceled',
+      canceled:  'Canceled',
+    }
+    const rawStatus = str(cd.call_status) ?? ''
+    const callStatus = statusMap[rawStatus.toLowerCase()] ?? rawStatus
+
     const { data, error } = await admin
       .from('call_outcomes')
-      .update({ call_status: str(cd.call_status), updated_at: new Date().toISOString() })
+      .update({ call_status: callStatus, updated_at: new Date().toISOString() })
       .eq('appointment_id', appointmentId)
       .or('call_status.neq.Rescheduled,call_status.is.null')
       .select()
