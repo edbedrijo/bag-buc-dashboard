@@ -404,8 +404,15 @@
       const el = document.getElementById(id);
       if (!el) continue;
       if (el.tagName === 'SELECT') {
+        const strVal = String(val);
+        let found = false;
         for (const opt of el.options) {
-          if (opt.text === String(val) || opt.value === String(val)) { opt.selected = true; break; }
+          if (opt.text === strVal || opt.value === strVal) { opt.selected = true; found = true; break; }
+        }
+        if (!found) {
+          const opt = document.createElement('option');
+          opt.text = strVal; opt.value = strVal; opt.selected = true;
+          el.appendChild(opt);
         }
       } else {
         el.value = val;
