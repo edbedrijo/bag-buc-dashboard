@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Pencil, Search, X, ExternalLink, Settings2 } from 'lucide-react'
+import { GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Pencil, Search, X, ExternalLink, Settings2, RefreshCw } from 'lucide-react'
 import EditModal from '@/components/EditModal'
 import type { CallOutcome } from '@/types'
 
@@ -446,15 +446,23 @@ function ManageFieldsModal({ order, hidden, onApply, onClose }: ManageFieldsProp
 interface Props {
   rows: CallOutcome[]
   onRowUpdated: (updated: CallOutcome) => void
+  onSync?: () => Promise<void>
 }
 
 const PAGE_SIZES = [20, 50, 100]
 
-export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
+export default function AppointmentsTable({ rows, onRowUpdated, onSync }: Props) {
   // Column order, widths, visibility
   const [colOrder,  setColOrder]  = useState<ColKey[]>(DEFAULT_ORDER)
   const [colWidths, setColWidths] = useState<Record<ColKey, number>>(DEFAULT_WIDTHS)
   const [hiddenCols, setHiddenCols] = useState<Set<ColKey>>(DEFAULT_HIDDEN)
+
+  const [syncing, setSyncing] = useState(false)
+
+  // Frozen columns (right-click header to freeze)
+  const [frozenCount, setFrozenCount] = useState(0)
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; colIdx: number } | null>(null)
+  const ctxMenuRef = useRef<HTMLDivElement>(null)
 
   // Sort
   const [sortField, setSortField] = useState('call_date')
@@ -462,7 +470,7 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
 
   // Filters
   const [search,        setSearch]        = useState('')
-  const [statusFilter,  setStatusFilter]  = useState<Set<string>>(new Set(['Scheduled']))
+  const [statusFilter,  setStatusFilter]  = useState<Set<string>>(new Set())
   const [closerFilter,  setCloserFilter]  = useState<Set<string>>(new Set())
 
   // Pagination
@@ -595,14 +603,16 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
   }
 
   // Unique filter options + modal lists
-  const allStatuses = useMemo(() => [...new Set(rows.map(r => displayStatus(r.call_status)))].sort(), [rows])
+  const allStatuses = useMemo(() => [...new Set(rows.map(r => displayStatus(r.call_status)))].filter(s => s !== 'Rescheduled').sort(), [rows])
   const allClosers  = useMemo(() => [...new Set(rows.map(r => r.closer).filter(Boolean))].sort() as string[], [rows])
   const allSetters  = useMemo(() => [...new Set(rows.map(r => r.setter_last).filter(Boolean))].sort() as string[], [rows])
 
   // Filter
   const filtered = useMemo(() => {
     return rows.filter(r => {
-      if (statusFilter.size  > 0 && !statusFilter.has(displayStatus(r.call_status)))  return false
+      // Rescheduled rows always pass the status filter — they attach as sub-rows to their parent
+      const isRescheduledRow = r.call_status === 'Rescheduled'
+      if (!isRescheduledRow && statusFilter.size > 0 && !statusFilter.has(displayStatus(r.call_status))) return false
       if (closerFilter.size  > 0 && !closerFilter.has(r.closer ?? ''))                return false
       if (search) {
         const q    = search.toLowerCase()
@@ -765,6 +775,21 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
     }
   }
 
+  // Cumulative left offset for a frozen column (36 = toggle cell width)
+  function stickyLeft(colIdx: number) {
+    let left = 36
+    for (let i = 0; i < colIdx; i++) left += colWidths[visibleCols[i].key]
+    return left
+  }
+
+  // Close context menu on outside click
+  useEffect(() => {
+    if (!ctxMenu) return
+    function close() { setCtxMenu(null) }
+    window.addEventListener('click', close)
+    return () => window.removeEventListener('click', close)
+  }, [ctxMenu])
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
 
@@ -773,8 +798,18 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
         <h2 className="text-base font-semibold text-gray-900">Appointments</h2>
         <div className="flex items-center gap-3">
           <p className="text-xs text-gray-300 leading-relaxed hidden sm:block text-right">
-            Drag headers to reorder<br />Drag right edge to resize
+            Drag headers to reorder<br />Drag right edge to resize<br />Right-click header to freeze
           </p>
+          {onSync && (
+            <button
+              onClick={async () => { setSyncing(true); try { await onSync() } finally { setSyncing(false) } }}
+              disabled={syncing}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw size={14} className={`text-gray-400 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing…' : 'Sync'}
+            </button>
+          )}
           <button
             onClick={() => setManageOpen(true)}
             className="flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
@@ -832,8 +867,8 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
 
           <thead className="sticky top-0 z-20 bg-gray-50">
             <tr>
-              <th className="border border-gray-200 bg-gray-50 w-9" />
-              {visibleCols.map(col => (
+              <th className="border border-gray-200 bg-gray-50 w-9 sticky left-0 z-30" />
+              {visibleCols.map((col, colIdx) => (
                 <th
                   key={col.key}
                   draggable
@@ -841,7 +876,9 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
                   onDragOver={e => { e.preventDefault(); e.stopPropagation(); onDragEnter(col.key) }}
                   onDrop={e => { e.preventDefault(); onDrop(col.key) }}
                   onDragEnd={onDragEnd}
-                  className="px-3 py-1.5 text-left select-none cursor-grab active:cursor-grabbing group relative border border-gray-200 bg-gray-50"
+                  onContextMenu={e => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY, colIdx }) }}
+                  className={`px-3 py-1.5 text-left select-none cursor-grab active:cursor-grabbing group relative border border-gray-200 bg-gray-50${colIdx < frozenCount ? ' z-30' : ''}${colIdx === frozenCount - 1 ? ' border-r-2 border-r-teal-400' : ''}`}
+                  style={colIdx < frozenCount ? { position: 'sticky', left: stickyLeft(colIdx) } : {}}
                 >
                   <span className="flex items-center gap-1.5 min-w-0">
                     <GripVertical className="w-3 h-3 text-gray-300 group-hover:text-gray-400 shrink-0 transition-colors" />
@@ -886,10 +923,10 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
                     onClick={() => setEditRow(primary)}
                     className="hover:bg-blue-50/40 transition-colors cursor-pointer border-b border-gray-100"
                   >
-                    {/* Group toggle cell */}
+                    {/* Group toggle cell — always sticky */}
                     <td
                       onClick={e => e.stopPropagation()}
-                      className="border border-gray-200 text-center w-9 px-1"
+                      className="border border-gray-200 text-center w-9 px-1 sticky left-0 z-10 bg-white"
                     >
                       {multi && (
                         <button
@@ -902,10 +939,11 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
                         </button>
                       )}
                     </td>
-                    {visibleCols.map(col => (
+                    {visibleCols.map((col, colIdx) => (
                       <td
                         key={col.key}
-                        className="px-3 py-1.5 overflow-hidden border border-gray-200 whitespace-nowrap max-w-0"
+                        className={`px-3 py-1.5 overflow-hidden border border-gray-200 whitespace-nowrap max-w-0${colIdx === frozenCount - 1 ? ' border-r-2 border-r-teal-400' : ''}`}
+                        style={colIdx < frozenCount ? { position: 'sticky', left: stickyLeft(colIdx), zIndex: 10, background: 'white' } : {}}
                       >
                         {renderCell(primary, col.key)}
                       </td>
@@ -932,11 +970,12 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
                       className="cursor-pointer transition-colors"
                       style={{ background: i % 2 === 0 ? '#f8fafc' : '#f1f5f9' }}
                     >
-                      <td className="border border-gray-200 border-l-4 border-l-teal-300 w-9" />
-                      {visibleCols.map(col => (
+                      <td className="border border-gray-200 border-l-4 border-l-teal-300 w-9 sticky left-0 z-10" style={{ background: 'inherit' }} />
+                      {visibleCols.map((col, colIdx) => (
                         <td
                           key={col.key}
-                          className="px-3 py-1.5 overflow-hidden border border-gray-200 whitespace-nowrap max-w-0"
+                          className={`px-3 py-1.5 overflow-hidden border border-gray-200 whitespace-nowrap max-w-0${colIdx === frozenCount - 1 ? ' border-r-2 border-r-teal-400' : ''}`}
+                          style={colIdx < frozenCount ? { position: 'sticky', left: stickyLeft(colIdx), zIndex: 10, background: 'inherit' } : {}}
                         >
                           {renderCell(row, col.key)}
                         </td>
@@ -1022,6 +1061,50 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
           onClose={() => setEditRow(null)}
           onSaved={updated => { onRowUpdated(updated); setEditRow(null) }}
         />
+      )}
+
+      {/* Freeze context menu */}
+      {ctxMenu && (
+        <div
+          ref={ctxMenuRef}
+          style={{ position: 'fixed', top: ctxMenu.y, left: ctxMenu.x, zIndex: 9999 }}
+          className="bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[170px]"
+          onClick={e => e.stopPropagation()}
+        >
+          {ctxMenu.colIdx < frozenCount ? (
+            <>
+              <button
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => { setFrozenCount(ctxMenu.colIdx + 1); setCtxMenu(null) }}
+              >
+                Freeze up to here
+              </button>
+              <button
+                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
+                onClick={() => { setFrozenCount(0); setCtxMenu(null) }}
+              >
+                Unfreeze all
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => { setFrozenCount(ctxMenu.colIdx + 1); setCtxMenu(null) }}
+              >
+                Freeze up to here
+              </button>
+              {frozenCount > 0 && (
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
+                  onClick={() => { setFrozenCount(0); setCtxMenu(null) }}
+                >
+                  Unfreeze all
+                </button>
+              )}
+            </>
+          )}
+        </div>
       )}
     </div>
   )

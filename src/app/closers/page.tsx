@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, Suspense, useMemo, useRef } from 'react'
-import { Calendar, RefreshCw } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { createBrowserClient, fetchAll } from '@/lib/supabase'
 import AppointmentsTable from './AppointmentsTable'
 import type { CallOutcome } from '@/types'
@@ -238,16 +238,8 @@ function ClosersContent() {
 
   return (
     <div className="min-h-screen">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Appointments</h1>
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
-          {syncing ? 'Syncing…' : 'Sync'}
-        </button>
       </div>
 
       <TeamStatsTable rows={allRows} />
@@ -257,7 +249,7 @@ function ClosersContent() {
           Loading appointments…
         </div>
       ) : (
-        <AppointmentsTable rows={allRows} onRowUpdated={handleRowUpdated} />
+        <AppointmentsTable rows={allRows} onRowUpdated={handleRowUpdated} onSync={handleSync} />
       )}
     </div>
   )
