@@ -385,7 +385,7 @@
   function applyPrefill(record) {
     if (!record) return;
     const fields = {
-      'buc-call-status':    record.call_status,
+      'buc-call-status':    record.call_status || 'Scheduled',
       'buc-call-outcome':   record.call_outcome,
       'buc-cash-collected': record.cash_collected != null ? String(record.cash_collected) : '',
       'buc-total-value':    record.total_value    != null ? String(record.total_value)    : '',
