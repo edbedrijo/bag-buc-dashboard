@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
     last_name:            str(cd.last_name),
     email:                str(cd.email),
     phone:                str(cd.phone),
-    call_date:            str(cd.call_date) ?? str(ghlAppt?.startTime),
+    call_date:            str(cd.call_date) ?? str(ghlAppt?.['startTime']),
     calendar:             str(cd.calendar_name),
     // apptCreatedBy (from GHL API) is the most reliable setter_last source at booking time
     setter_last:          apptCreatedBy ?? str(cd.setter_last),
