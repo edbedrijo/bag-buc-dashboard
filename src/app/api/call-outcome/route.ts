@@ -54,12 +54,8 @@ export async function GET(req: NextRequest) {
     .select('*')
     .eq('appointment_id', appointmentId)
 
-  if (callDate) {
-    query = query.eq('call_date', callDate)
-  }
-
   const { data: existing } = await query
-    .order('call_date', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 

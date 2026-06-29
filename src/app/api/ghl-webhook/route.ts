@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
     setter_current:       str(cd.setter_current),
     closer,
     is_rescheduled:       str(cd.rescheduled) === 'yes',
-    call_status:          str(cd.call_status) ?? null,
+    call_status:          str(cd.rescheduled) === 'yes' ? 'Rescheduled' : (str(cd.call_status) ?? null),
     call_outcome:         null,
     cash_collected:       null,
     total_value:          null,
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await admin
     .from('call_outcomes')
-    .upsert(record, { onConflict: 'appointment_id,call_date' })
+    .upsert(record, { onConflict: 'appointment_id' })
     .select()
     .single()
 
