@@ -596,18 +596,22 @@
       function resolveApptId() {
         if (card.dataset.bucApptId) return card.dataset.bucApptId;
         const cardText = card.textContent;
+        const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         for (const [id, appt] of Object.entries(apptRegistry)) {
           const start = appt.startTime || appt.start || '';
           if (!start) continue;
-          const timePart = start.split('T')[1] || '';
+          const [datePart, timePart] = start.split('T');
+          const [, month, day] = datePart.split('-');
+          const monthStr = MONTHS[parseInt(month, 10) - 1];
+          const dayStr   = String(parseInt(day, 10));
+          const dateLabel = `${monthStr} ${dayStr}`; // e.g. "Jul 22"
           const [hourStr, minStr] = timePart.split(':');
           const hour = parseInt(hourStr, 10);
           const min  = minStr || '00';
-          const ampm = hour >= 12 ? 'pm' : 'am';
           const h12  = ((hour % 12) || 12);
           const timeStr = `${h12}:${min}`;
-          if (cardText.includes(timeStr) || cardText.toLowerCase().includes(timeStr + ' ' + ampm)) {
-            log('Matched registry by time:', id, timeStr);
+          if (cardText.includes(dateLabel) && cardText.includes(timeStr)) {
+            log('Matched registry by date+time:', id, dateLabel, timeStr);
             card.dataset.bucApptId = id;
             return id;
           }
