@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
   }
 
   const cd = (body.customData ?? {}) as Record<string, unknown>
+  // GHL sends all custom field values flat on the body (keyed by label)
+  const cf = (key: string) => str(body[key])
 
   const appointmentId = str(cd.appointment_id)
   if (!appointmentId) {
@@ -135,8 +137,9 @@ export async function POST(req: NextRequest) {
     lead_quality:         null,
     call_quality:         null,
     recording:            null,
-    guidance:             str(cd.guidance),
-    avatar:               str(cd.avatar),
+    notes:                cf('Contact Notes'),
+    guidance:             cf('Guidance') ?? str(cd.guidance),
+    avatar:               cf('Avatar') ?? str(cd.avatar),
     utm_source:           str(cd.utm_source),
     utm_campaign:         str(cd.utm_campaign),
     utm_medium:           str(cd.utm_medium),
