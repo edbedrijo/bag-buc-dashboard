@@ -91,12 +91,11 @@ export async function POST(req: NextRequest) {
       .eq('appointment_id', appointmentId)
       .neq('call_status', 'Rescheduled')
       .select()
-      .single()
     if (error) {
       console.error('[ghl-webhook] update_status error:', error.message)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    return NextResponse.json({ success: true, action: 'update_status', record: data })
+    return NextResponse.json({ success: true, action: 'update_status', records: data })
   }
 
   const isRescheduled = str(cd.rescheduled) === 'yes'
