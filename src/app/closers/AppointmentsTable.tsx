@@ -114,11 +114,17 @@ function fmtDate(val: string | null) {
 
 function fmtDateTime(val: string | null) {
   if (!val) return ''
-  try {
-    const d = new Date(val)
-    return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) +
-      ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-  } catch { return val }
+  // Split string directly — avoids browser timezone conversion on appointment local times
+  const clean = val.replace('T', ' ').split('+')[0].split('Z')[0]
+  const [datePart, timePart] = clean.split(' ')
+  if (!datePart) return val
+  const [year, month, day] = datePart.split('-')
+  if (!timePart) return `${month}/${day}/${year}`
+  const [h, m] = timePart.split(':')
+  const hour = parseInt(h)
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  const h12  = hour % 12 || 12
+  return `${month}/${day}/${year} ${h12}:${m} ${ampm}`
 }
 
 function parseSortVal(row: CallOutcome, key: string): string | number {
