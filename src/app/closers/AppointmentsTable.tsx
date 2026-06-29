@@ -627,7 +627,7 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
     })
   }, [filtered, sortField, sortDir])
 
-  // Group by appointment_id (preserve sort order — first occurrence = primary row)
+  // Group by appointment_id; within each group, non-Rescheduled row is always first
   const groups = useMemo(() => {
     const map = new Map<string, CallOutcome[]>()
     for (const row of sorted) {
@@ -635,7 +635,13 @@ export default function AppointmentsTable({ rows, onRowUpdated }: Props) {
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(row)
     }
-    return [...map.values()]
+    return [...map.values()].map(group =>
+      group.slice().sort((a, b) => {
+        const aR = a.call_status === 'Rescheduled' ? 1 : 0
+        const bR = b.call_status === 'Rescheduled' ? 1 : 0
+        return aR - bR
+      })
+    )
   }, [sorted])
 
   // Expanded appointment groups
