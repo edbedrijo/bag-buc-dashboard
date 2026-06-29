@@ -113,6 +113,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, action: 'update_status', record: data })
   }
 
+  const isRescheduled = str(cd.rescheduled) === 'yes'
+
+  // On reschedule: mark all existing rows for this appointment as Rescheduled,
+  // then insert a fresh row with the new call_date
+  if (isRescheduled) {
+    await admin
+      .from('call_outcomes')
+      .update({ call_status: 'Rescheduled' })
+      .eq('appointment_id', appointmentId)
+      .neq('call_status', 'Rescheduled')
+  }
+
   const record = {
     appointment_id:       appointmentId,
     ghl_id:               contactId,
@@ -129,8 +141,8 @@ export async function POST(req: NextRequest) {
     setter_first:         str(cd.setter_first),
     setter_current:       str(cd.setter_current),
     closer,
-    is_rescheduled:       str(cd.rescheduled) === 'yes',
-    call_status:          str(cd.rescheduled) === 'yes' ? 'Rescheduled' : (str(cd.call_status) ?? null),
+    is_rescheduled:       isRescheduled,
+    call_status:          str(cd.call_status) ?? null,
     call_outcome:         null,
     cash_collected:       null,
     total_value:          null,
@@ -151,7 +163,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await admin
     .from('call_outcomes')
-    .upsert(record, { onConflict: 'appointment_id' })
+    .upsert(record, { onConflict: 'appointment_id,call_date' })
     .select()
     .single()
 

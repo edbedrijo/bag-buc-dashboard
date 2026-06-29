@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         jerry_grade:         body.jerryGrade     ?? null,
         jerry_coaching_note: body.jerryCoachingNote ?? null,
       },
-      { onConflict: 'appointment_id' }
+      { onConflict: 'appointment_id,call_date' }
     )
     .select()
     .single()
