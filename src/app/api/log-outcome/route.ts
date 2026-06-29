@@ -20,12 +20,12 @@ function resolveTeamTab(closer: string | undefined): string | null {
 }
 
 async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string) {
-  if (!process.env.GHL_PIT_BUC) return
+  if (!process.env.GHL_PIT_BUC_TEST) return
   try {
     await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
+        Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
         Version: '2021-07-28',
         'Content-Type': 'application/json',
       },
