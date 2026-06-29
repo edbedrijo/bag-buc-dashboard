@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import type { LogOutcomePayload } from '@/types'
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 })
+}
+
 function parseNumber(val: string | number | undefined): number | null {
   if (val === undefined || val === null || val === '') return null
   const n = typeof val === 'number' ? val : parseFloat(String(val).replace(/[$,]/g, ''))

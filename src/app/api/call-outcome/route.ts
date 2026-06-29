@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 })
+}
+
 function str(val: unknown): string | null {
   if (val === undefined || val === null || val === '') return null
   return String(val)
