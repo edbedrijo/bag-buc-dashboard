@@ -67,8 +67,28 @@ export async function POST(req: NextRequest) {
 
   // setter_last comes from body.calendar.created_by — always populated natively at booking time
   const setterLast = str(calendarData['created_by']) ?? str(cd.setter_last)
-  // call_date comes from body.calendar.startTime — proper ISO, not the human-readable customData value
-  const callDate   = str(calendarData['startTime']) ?? null
+
+  // Convert startTime (local time in selectedTimezone) to proper UTC before storing
+  // GHL sends startTime without timezone offset — we use selectedTimezone to correct it
+  let callDate: string | null = null
+  const rawStart = str(calendarData['startTime'])
+  const selectedTZ = str(calendarData['selectedTimezone'])
+  if (rawStart) {
+    try {
+      if (selectedTZ) {
+        // Treat rawStart as UTC first, then measure how far off the selectedTimezone is,
+        // and subtract that offset to get the true UTC equivalent of the local time
+        const asUTC  = new Date(rawStart + 'Z')
+        const inTZ   = new Date(asUTC.toLocaleString('en-US', { timeZone: selectedTZ }))
+        const offsetMs = inTZ.getTime() - asUTC.getTime()
+        callDate = new Date(asUTC.getTime() - offsetMs).toISOString()
+      } else {
+        callDate = new Date(rawStart + 'Z').toISOString()
+      }
+    } catch {
+      callDate = rawStart
+    }
+  }
 
   // Fetch contact dateAdded from GHL API — only API call we still need
   let dateCreated: string | null = null
