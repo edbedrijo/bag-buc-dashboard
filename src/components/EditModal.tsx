@@ -9,8 +9,8 @@ import type { CallOutcome } from '@/types'
 
 const CALL_STATUS_OPTIONS  = ['Show', 'No Show', 'Rescheduled', 'Canceled']
 const CALL_OUTCOME_OPTIONS = ['PIF', 'Payment Plan', 'Deposit Made', 'Follow Up Scheduled', 'Not Sold', 'Not Qualified', 'Not Interested']
-const LEAD_QUALITY_OPTIONS = ['High Value', 'Qualified', 'So-So', 'Low Quality', 'Bad Lead']
-const CALL_QUALITY_OPTIONS = ['Excellent Call', 'Good Call', 'Average Call', 'Weak Call', 'Bad Call']
+const LEAD_QUALITY_OPTIONS = ['💎 High Value', '🟢 Qualified', '🟡 So-So', '🟠 Low Quality', '🔴 Bad Lead']
+const CALL_QUALITY_OPTIONS = ['💎 Excellent Call', '🟢 Good Call', '🟡 Average Call', '🟠 Weak Call', '🔴 Bad Call']
 const JERRY_GRADE_OPTIONS  = ['A', 'B', 'C', 'D']
 
 // ── Phone formatter ───────────────────────────────────────────────────────────

@@ -189,6 +189,10 @@
       transition: border-color 0.15s, box-shadow 0.15s;
       font-family: inherit; width: 100%; box-sizing: border-box;
     }
+    #buc-outcome-modal .om-field select {
+      appearance: auto; -webkit-appearance: auto; cursor: pointer;
+      padding-right: 28px;
+    }
     #buc-outcome-modal .om-field select:focus,
     #buc-outcome-modal .om-field input:focus,
     #buc-outcome-modal .om-field textarea:focus {
@@ -325,7 +329,7 @@
             <div class="om-section">Payment</div>
             <div class="om-field">
               <label>Cash Collected</label>
-              <input type="number" id="buc-cash-collected" placeholder="0.00" min="0" step="0.01" value="${prefill.cashCollected || ''}" />
+              <input type="text" id="buc-cash-collected" placeholder="0.00" value="${prefill.cashCollected ? Number(prefill.cashCollected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" />
             </div>
             <div class="om-field">
               <label>Total Value</label>
@@ -388,7 +392,7 @@
     const fields = {
       'buc-call-status':    record.call_status || 'Scheduled',
       'buc-call-outcome':   record.call_outcome,
-      'buc-cash-collected': record.cash_collected != null ? String(record.cash_collected) : '',
+      'buc-cash-collected': record.cash_collected != null ? Number(record.cash_collected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '',
       'buc-total-value':    record.total_value    != null ? String(record.total_value)    : '',
       'buc-lead-quality':   record.lead_quality,
       'buc-call-quality':   record.call_quality,
@@ -482,7 +486,7 @@
         callOutcome:      document.getElementById('buc-call-outcome').value,
         closer:           document.getElementById('buc-closer').value,
         setter:           document.getElementById('buc-setter').value,
-        cashCollected:    document.getElementById('buc-cash-collected').value,
+        cashCollected:    document.getElementById('buc-cash-collected').value.replace(/,/g, ''),
         totalValue:       document.getElementById('buc-total-value').value,
         leadQuality:      document.getElementById('buc-lead-quality').value,
         callQuality:      document.getElementById('buc-call-quality').value,
