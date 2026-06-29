@@ -101,8 +101,6 @@ export async function POST(req: NextRequest) {
         .then((json: { appointment?: Record<string, unknown> } | null) => {
           if (json?.appointment) {
             ghlAppt = json.appointment
-            // Log full appointment so we can see all available fields on first test
-            console.log('[ghl-webhook] appointment payload:', JSON.stringify(ghlAppt, null, 2))
             // Try known field names for the booking creator (setter)
             apptCreatedBy = str(ghlAppt.createdBy ?? ghlAppt.created_by ?? ghlAppt.bookedBy ?? null)
           }
@@ -138,10 +136,12 @@ export async function POST(req: NextRequest) {
     last_name:            str(cd.last_name),
     email:                str(cd.email),
     phone:                str(cd.phone),
-    call_date:            str(cd.call_date),
+    call_date:            str(cd.call_date) ?? str(ghlAppt?.startTime),
     calendar:             str(cd.calendar_name),
     // apptCreatedBy (from GHL API) is the most reliable setter_last source at booking time
     setter_last:          apptCreatedBy ?? str(cd.setter_last),
+    // TEMP: dump raw appointment payload into notes so we can inspect field names via Supabase
+    notes:                ghlAppt ? JSON.stringify(ghlAppt) : null,
     setter_first:         str(cd.setter_first),
     setter_current:       str(cd.setter_current),
     closer,
