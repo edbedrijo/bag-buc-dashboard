@@ -88,8 +88,10 @@ export async function POST(req: NextRequest) {
     const statusMap: Record<string, string> = {
       showed:    'Show',
       noshow:    'No Show',
+      'no show': 'No Show',
       cancelled: 'Canceled',
       canceled:  'Canceled',
+      invalid:   'Canceled',
     }
     const rawStatus = str(cd.call_status) ?? ''
     const callStatus = statusMap[rawStatus.toLowerCase()] ?? rawStatus
