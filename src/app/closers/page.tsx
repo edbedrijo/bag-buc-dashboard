@@ -221,6 +221,26 @@ function ClosersContent() {
 
   useEffect(() => {
     loadRows().finally(() => setLoading(false))
+
+    const supabase = createBrowserClient()
+    const channel = supabase
+      .channel('call_outcomes_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'call_outcomes' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setAllRows(prev => [payload.new as CallOutcome, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setAllRows(prev => prev.map(r => r.id === (payload.new as CallOutcome).id ? payload.new as CallOutcome : r))
+          } else if (payload.eventType === 'DELETE') {
+            setAllRows(prev => prev.filter(r => r.id !== (payload.old as CallOutcome).id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   async function handleSync() {
