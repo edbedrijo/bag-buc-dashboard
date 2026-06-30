@@ -23,8 +23,8 @@ function resolveTeamTab(closer: string | undefined): string | null {
   return null
 }
 
-async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string) {
-  if (!process.env.GHL_PIT_BUC_TEST) return
+async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string): Promise<{ status: number; body: string } | { error: string } | { skipped: string }> {
+  if (!process.env.GHL_PIT_BUC_TEST) return { skipped: 'GHL_PIT_BUC_TEST not set' }
   const mappedStatus = ({
     'Show':      'showed',
     'No Show':   'noshow',
@@ -42,10 +42,10 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
       },
       body: JSON.stringify({ appointmentStatus: mappedStatus }),
     })
-    const text = await res.text()
-    console.log('[log-outcome] GHL PATCH status:', res.status, '| body:', text)
+    const body = await res.text()
+    return { status: res.status, body }
   } catch (e) {
-    console.error('[log-outcome] GHL appointment PATCH failed:', e)
+    return { error: String(e) }
   }
 }
 
@@ -97,9 +97,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Write call_status back to GHL appointment so both stay in sync
+  let ghlPatch = null
   if (body.callStatus && body.appointmentId) {
-    await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
+    ghlPatch = await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
   }
 
-  return NextResponse.json({ success: true, record: data })
+  return NextResponse.json({ success: true, record: data, ghlPatch })
 }
