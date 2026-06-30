@@ -32,15 +32,29 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
     'Scheduled': 'confirmed',
   } as Record<string, string>)[callStatus] ?? callStatus.toLowerCase()
 
+  const headers = {
+    Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
+    Version: '2021-04-15',
+    'Content-Type': 'application/json',
+  }
+
   try {
+    // Fetch appointment first to get required fields for PUT
+    const getRes = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, { headers })
+    const getJson = await getRes.json() as { appointment?: Record<string, unknown> }
+    const appt = getJson.appointment
+    if (!appt) return { error: 'Could not fetch appointment from GHL' }
+
     const res = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
       method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
-        Version: '2021-04-15',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ appointmentStatus: mappedStatus }),
+      headers,
+      body: JSON.stringify({
+        calendarId:        appt.calendarId,
+        locationId:        appt.locationId,
+        startTime:         appt.startTime,
+        endTime:           appt.endTime,
+        appointmentStatus: mappedStatus,
+      }),
     })
     const body = await res.text()
     return { status: res.status, body }
