@@ -23,7 +23,7 @@ function resolveTeamTab(closer: string | undefined): string | null {
 
 async function fetchFromGHL(contactId: string, appointmentId: string) {
   const headers = {
-    Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
+    Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
     Version: '2021-07-28',
     Accept: 'application/json',
   }
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
   }
 
   // No row found — fetch from GHL and create it
-  if (!contactId || !process.env.GHL_PIT_BUC_TEST) {
+  if (!contactId || !process.env.GHL_PIT_BUC) {
     return NextResponse.json({ found: false, record: null })
   }
 
