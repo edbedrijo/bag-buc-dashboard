@@ -363,7 +363,7 @@
             </div>
             <div class="om-field full">
               <label>Appointment Notes</label>
-              <textarea id="buc-notes" placeholder="Notes about this call...">${prefill.notes || ''}</textarea>
+              <textarea id="buc-notes" placeholder="Notes about this call...">${prefill.appointment_notes || ''}</textarea>
             </div>
 
             <div class="om-section">Jerry Review</div>
@@ -402,7 +402,7 @@
       'buc-call-quality':   record.call_quality,
       'buc-recording':      record.recording,
       'buc-contact-notes':  record.contact_notes,
-      'buc-notes':          record.notes,
+      'buc-notes':          record.appointment_notes,
       'buc-jerry-grade':    record.jerry_grade,
       'buc-jerry-note':     record.jerry_coaching_note,
       'buc-closer':         record.closer,
