@@ -33,7 +33,12 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
         Version: '2021-07-28',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ appointmentStatus: callStatus.toLowerCase().replace(' ', '_') }),
+      body: JSON.stringify({ appointmentStatus: {
+        'Show':      'showed',
+        'No Show':   'noshow',
+        'Canceled':  'cancelled',
+        'Scheduled': 'confirmed',
+      }[callStatus] ?? callStatus.toLowerCase() }),
     })
   } catch (e) {
     console.error('[log-outcome] GHL appointment PATCH failed:', e)
