@@ -77,6 +77,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
     lead_quality:        row.lead_quality        ?? '',
     call_quality:        row.call_quality        ?? '',
     recording:           row.recording           ?? '',
+    contact_notes:       row.contact_notes       ?? '',
     appointment_notes:   row.appointment_notes   ?? '',
     jerry_grade:         row.jerry_grade         ?? '',
     jerry_coaching_note: row.jerry_coaching_note ?? '',
@@ -108,6 +109,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
       lead_quality:        form.lead_quality        || null,
       call_quality:        form.call_quality        || null,
       recording:           form.recording           || null,
+      contact_notes:       form.contact_notes       || null,
       appointment_notes:   form.appointment_notes   || null,
       jerry_grade:         form.jerry_grade         || null,
       jerry_coaching_note: form.jerry_coaching_note || null,
@@ -275,6 +277,17 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
                 </a>
               )}
             </div>
+          </Field>
+
+          {/* Contact Notes */}
+          <Field label="Contact Notes">
+            <textarea
+              value={form.contact_notes}
+              onChange={e => set('contact_notes', e.target.value)}
+              rows={3}
+              placeholder="Notes from the contact..."
+              className={`${inputCls} resize-none`}
+            />
           </Field>
 
           {/* Appointment Notes */}
