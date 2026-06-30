@@ -25,21 +25,25 @@ function resolveTeamTab(closer: string | undefined): string | null {
 
 async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string) {
   if (!process.env.GHL_PIT_BUC_TEST) return
+  const mappedStatus = ({
+    'Show':      'showed',
+    'No Show':   'noshow',
+    'Canceled':  'cancelled',
+    'Scheduled': 'confirmed',
+  } as Record<string, string>)[callStatus] ?? callStatus.toLowerCase()
+
   try {
-    await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
+    const res = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
-        Version: '2021-07-28',
+        Version: '2021-04-15',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ appointmentStatus: {
-        'Show':      'showed',
-        'No Show':   'noshow',
-        'Canceled':  'cancelled',
-        'Scheduled': 'confirmed',
-      }[callStatus] ?? callStatus.toLowerCase() }),
+      body: JSON.stringify({ appointmentStatus: mappedStatus }),
     })
+    const text = await res.text()
+    console.log('[log-outcome] GHL PATCH status:', res.status, '| body:', text)
   } catch (e) {
     console.error('[log-outcome] GHL appointment PATCH failed:', e)
   }
