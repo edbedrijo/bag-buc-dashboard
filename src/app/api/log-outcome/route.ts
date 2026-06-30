@@ -24,7 +24,7 @@ function resolveTeamTab(closer: string | undefined): string | null {
 }
 
 async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string) {
-  if (!process.env.GHL_PIT_BUC) return
+  if (!process.env.GHL_PIT_BUC_TEST) return
   const mappedStatus = ({
     'Show':      'showed',
     'No Show':   'noshow',
@@ -36,7 +36,7 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
     const res = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${process.env.GHL_PIT_BUC}`,
+        Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
         Version: '2021-04-15',
         'Content-Type': 'application/json',
       },
