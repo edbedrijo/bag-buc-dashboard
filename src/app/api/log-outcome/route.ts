@@ -45,9 +45,9 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
     const appt = getJson.appointment
     if (!appt) return { error: 'Could not fetch appointment from GHL' }
 
-    const res = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, {
+    const res = await fetch(`https://services.leadconnectorhq.com/calendars/events/appointments/${appointmentId}`, {
       method: 'PUT',
-      headers,
+      headers: { ...headers, Version: 'v3' },
       body: JSON.stringify({
         calendarId:        appt.calendarId,
         locationId:        appt.locationId,
