@@ -282,7 +282,7 @@
             </svg>
           </div>
           <div>
-            <h2>Log Call Outcome</h2>
+            <h2 id="buc-modal-title">Log Call Outcome</h2>
             ${apptName    ? `<p class="om-appt-name">${apptName}</p>` : ''}
             ${apptDateTime ? `<p class="om-appt-time">${apptDateTime}</p>` : ''}
           </div>
@@ -470,6 +470,11 @@
           if (loadingMsg) loadingMsg.remove();
           if (record?.call_date) supabaseCallDate = record.call_date;
           applyPrefill(record);
+          if (record?.call_outcome) {
+            const titleEl = document.getElementById('buc-modal-title');
+            if (titleEl) titleEl.textContent = 'Edit Outcome';
+            if (submitBtn) submitBtn.textContent = 'Save Changes';
+          }
           if (statusOverride) {
             const el = document.getElementById('buc-call-status');
             if (el) for (const opt of el.options) {
