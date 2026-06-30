@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
         if (contactRes.ok) {
           const { contact } = await contactRes.json() as { contact?: Record<string, unknown> }
           const customFields = (contact?.customFields as Array<{ id: string; value: unknown }>) ?? []
-          const contactNotes = customFields.find(f => f.id === 'IhfRVQfuGnIcXuBLLse0')?.value ?? null
+          const contactNotes = customFields.find(f => f.id === 'YOsX8jKD4l3XVsgfVA8h')?.value ?? null
           existing.notes = str(contactNotes)
         }
       } catch (e) {

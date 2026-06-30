@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customFields: [{ id: 'IhfRVQfuGnIcXuBLLse0', value: body.notes }]
+          customFields: [{ id: 'YOsX8jKD4l3XVsgfVA8h', value: body.notes }]
         }),
       })
     } catch (e) {
