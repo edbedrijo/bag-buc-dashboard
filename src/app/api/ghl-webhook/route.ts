@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
     email:                str(cd.email),
     phone:                str(cd.phone),
     call_date:            callDate,
-    calendar:             str(cd.calendar_name),
+    calendar:             str(calendarData['calendarName']),
     setter_last:          setterLast,
     setter_first:         str(cd.setter_first),
     setter_current:       str(cd.setter_current),
