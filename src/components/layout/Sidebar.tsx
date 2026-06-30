@@ -2,14 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, ClipboardList, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react'
+import { Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { href: '/',           label: 'Overview',    icon: LayoutDashboard },
   { href: '/closers',    label: 'Closers',     icon: Users },
-  { href: '/call-log',   label: 'Call Log',    icon: ClipboardList },
 ]
 
 export default function Sidebar() {
