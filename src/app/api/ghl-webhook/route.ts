@@ -37,6 +37,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // Native GHL AppointmentDelete webhook (registered in GHL Settings → Webhooks)
+  if (str(body.type) === 'AppointmentDelete') {
+    const appt = (body.appointment ?? {}) as Record<string, unknown>
+    const apptId = str(appt.id)
+    if (!apptId) return NextResponse.json({ error: 'appointment.id missing' }, { status: 400 })
+    const admin = createAdminClient()
+    const { error } = await admin.from('call_outcomes').delete().eq('appointment_id', apptId)
+    if (error) {
+      console.error('[ghl-webhook] AppointmentDelete error:', error.message)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+    return NextResponse.json({ success: true, action: 'deleted', appointmentId: apptId })
+  }
+
   const cd = (body.customData ?? {}) as Record<string, unknown>
   // GHL sends all custom field values flat on the body (keyed by label)
   const cf = (key: string) => str(body[key])
@@ -48,7 +62,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Hard delete when GHL fires a deletion event
+  // Hard delete when GHL fires a deletion event (workflow-based)
   if (str(cd.action) === 'deleted') {
     const { error } = await admin
       .from('call_outcomes')
