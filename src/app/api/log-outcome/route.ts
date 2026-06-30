@@ -114,5 +114,24 @@ export async function POST(req: NextRequest) {
     await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
   }
 
+  // Sync Contact Notes back to GHL contact
+  if (body.notes != null && body.contactId && process.env.GHL_PIT_BUC_TEST) {
+    try {
+      await fetch(`https://services.leadconnectorhq.com/contacts/${body.contactId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`,
+          Version: '2021-07-28',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customFields: [{ id: 'IhfRVQfuGnIcXuBLLse0', value: body.notes }]
+        }),
+      })
+    } catch (e) {
+      console.error('[log-outcome] GHL contact notes PATCH failed:', e)
+    }
+  }
+
   return NextResponse.json({ success: true, record: data })
 }

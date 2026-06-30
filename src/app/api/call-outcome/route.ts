@@ -64,6 +64,22 @@ export async function GET(req: NextRequest) {
     .maybeSingle()
 
   if (existing) {
+    // Always fetch fresh Contact Notes from GHL so modal never shows stale notes
+    if (contactId && process.env.GHL_PIT_BUC_TEST) {
+      try {
+        const contactRes = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+          headers: { Authorization: `Bearer ${process.env.GHL_PIT_BUC_TEST}`, Version: '2021-07-28' }
+        })
+        if (contactRes.ok) {
+          const { contact } = await contactRes.json() as { contact?: Record<string, unknown> }
+          const customFields = (contact?.customFields as Array<{ id: string; value: unknown }>) ?? []
+          const contactNotes = customFields.find(f => f.id === 'IhfRVQfuGnIcXuBLLse0')?.value ?? null
+          existing.notes = str(contactNotes)
+        }
+      } catch (e) {
+        console.error('[call-outcome GET] Failed to fetch fresh contact notes:', e)
+      }
+    }
     return NextResponse.json({ found: true, record: existing })
   }
 
