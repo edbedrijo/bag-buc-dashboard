@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
           const { contact } = await contactRes.json() as { contact?: Record<string, unknown> }
           const customFields = (contact?.customFields as Array<{ id: string; value: unknown }>) ?? []
           const contactNotes = customFields.find(f => f.id === 'YOsX8jKD4l3XVsgfVA8h')?.value ?? null
-          existing.notes = str(contactNotes)
+          existing.contact_notes = str(contactNotes)
         }
       } catch (e) {
         console.error('[call-outcome GET] Failed to fetch fresh contact notes:', e)
@@ -122,9 +122,10 @@ export async function GET(req: NextRequest) {
         phone:          str(contact.phone),
         guidance:       str(contact.guidance ?? cf('contact.guidance')),
         avatar:         str(contact.avatar   ?? cf('contact.avatar')),
-        setter_first:   str(cf('gWwM1uGiN93ebRR3X0cT')),   // Setter_First field ID
-        setter_current: str(cf('aCkkPWt99NBwCg8K2evm')),   // Setter_Current field ID
-        setter_last:    str(cf('s0F82CefcNFxq9riYejO')),   // Setter_Last field ID
+        setter_first:   str(cf('gWwM1uGiN93ebRR3X0cT')),
+        setter_current: str(cf('aCkkPWt99NBwCg8K2evm')),
+        setter_last:    str(cf('s0F82CefcNFxq9riYejO')),
+        contact_notes:  str(cf('YOsX8jKD4l3XVsgfVA8h')),
         closer,
         team_tab:       resolveTeamTab(closer ?? undefined),
       }

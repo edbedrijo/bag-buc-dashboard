@@ -63,6 +63,7 @@ export interface LogOutcomePayload {
   callQuality?: string
   recording?: string
   notes?: string
+  contactNotes?: string
   jerryGrade?: string
   jerryCoachingNote?: string
 }

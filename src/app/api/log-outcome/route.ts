@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
         call_quality:        body.callQuality    ?? null,
         recording:           body.recording      ?? null,
         notes:               body.notes          ?? null,
+        contact_notes:       body.contactNotes   ?? null,
         jerry_grade:         body.jerryGrade     ?? null,
         jerry_coaching_note: body.jerryCoachingNote ?? null,
       },
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Sync Contact Notes back to GHL contact
-  if (body.notes != null && body.contactId && process.env.GHL_PIT_BUC_TEST) {
+  if (body.contactNotes != null && body.contactId && process.env.GHL_PIT_BUC_TEST) {
     try {
       await fetch(`https://services.leadconnectorhq.com/contacts/${body.contactId}`, {
         method: 'PUT',
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customFields: [{ id: 'YOsX8jKD4l3XVsgfVA8h', value: body.notes }]
+          customFields: [{ id: 'YOsX8jKD4l3XVsgfVA8h', value: body.contactNotes }]
         }),
       })
     } catch (e) {
