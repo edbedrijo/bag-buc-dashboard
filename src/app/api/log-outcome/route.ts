@@ -23,8 +23,8 @@ function resolveTeamTab(closer: string | undefined): string | null {
   return null
 }
 
-async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string): Promise<{ status: number; body: string } | { error: string } | { skipped: string }> {
-  if (!process.env.GHL_PIT_BUC_TEST) return { skipped: 'GHL_PIT_BUC_TEST not set' }
+async function patchGHLAppointmentStatus(appointmentId: string, callStatus: string): Promise<void> {
+  if (!process.env.GHL_PIT_BUC_TEST) return
   const mappedStatus = ({
     'Show':      'showed',
     'No Show':   'noshow',
@@ -43,7 +43,7 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
     const getRes = await fetch(`https://services.leadconnectorhq.com/calendars/appointments/${appointmentId}`, { headers })
     const getJson = await getRes.json() as { appointment?: Record<string, unknown> }
     const appt = getJson.appointment
-    if (!appt) return { error: 'Could not fetch appointment from GHL' }
+    if (!appt) { console.error('[log-outcome] Could not fetch appointment from GHL'); return }
 
     const res = await fetch(`https://services.leadconnectorhq.com/calendars/events/appointments/${appointmentId}`, {
       method: 'PUT',
@@ -56,10 +56,9 @@ async function patchGHLAppointmentStatus(appointmentId: string, callStatus: stri
         appointmentStatus: mappedStatus,
       }),
     })
-    const body = await res.text()
-    return { status: res.status, body }
+    if (!res.ok) console.error('[log-outcome] GHL PATCH failed:', res.status, await res.text())
   } catch (e) {
-    return { error: String(e) }
+    console.error('[log-outcome] GHL appointment PATCH error:', e)
   }
 }
 
@@ -111,10 +110,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Write call_status back to GHL appointment so both stay in sync
-  let ghlPatch = null
   if (body.callStatus && body.appointmentId) {
-    ghlPatch = await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
+    await patchGHLAppointmentStatus(body.appointmentId, body.callStatus)
   }
 
-  return NextResponse.json({ success: true, record: data, ghlPatch })
+  return NextResponse.json({ success: true, record: data })
 }
