@@ -39,6 +39,7 @@ export interface CallOutcome {
   latest_att_source: string | null
   latest_att_channel: string | null
   latest_att_asset: string | null
+  contact_notes: string | null
   appointment_notes: string | null
   jerry_grade: string | null
   jerry_coaching_note: string | null
