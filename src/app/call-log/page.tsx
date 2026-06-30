@@ -20,7 +20,7 @@ const COLUMNS: { key: keyof CallOutcome; label: string }[] = [
   { key: 'lead_quality',  label: 'Lead Quality' },
   { key: 'call_quality',  label: 'Call Quality' },
   { key: 'jerry_grade',   label: 'Jerry Grade' },
-  { key: 'notes',         label: 'Notes' },
+  { key: 'appointment_notes', label: 'Appointment Notes' },
 ]
 
 function fmt$(n: number | null) {

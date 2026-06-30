@@ -13,7 +13,7 @@ type ColKey =
   | 'call_date' | 'calendar' | 'setter_last' | 'setter_current' | 'setter_first' | 'closer'
   | 'call_status' | 'call_outcome' | 'cash_collected' | 'total_value'
   | 'lead_quality' | 'call_quality' | 'recording' | 'guidance'
-  | 'avatar' | 'notes' | 'jerry_grade' | 'jerry_coaching_note'
+  | 'avatar' | 'appointment_notes' | 'jerry_grade' | 'jerry_coaching_note'
   | 'is_rescheduled'
   | 'utm_source' | 'utm_campaign' | 'utm_medium' | 'utm_content'
   | 'latest_att_source' | 'latest_att_channel' | 'latest_att_asset'
@@ -49,7 +49,7 @@ const ALL_COLS: ColDef[] = [
   { key: 'recording',          label: 'Recording',          defaultW: 120 },
   { key: 'guidance',           label: 'Guidance',           defaultW: 200 },
   { key: 'avatar',             label: 'Avatar',             defaultW: 100 },
-  { key: 'notes',              label: 'Notes',              defaultW: 200 },
+  { key: 'appointment_notes',  label: 'Appointment Notes',  defaultW: 200 },
   { key: 'jerry_grade',        label: 'Jerry Grade',        defaultW: 110 },
   { key: 'jerry_coaching_note',label: 'Jerry Coaching Note',defaultW: 220 },
   { key: 'is_rescheduled',     label: 'Rescheduled',        defaultW: 110 },
@@ -67,7 +67,7 @@ const DEFAULT_ORDER: ColKey[] = [
   'first_name', 'last_name', 'email', 'phone', 'call_date',
   'setter_last', 'closer', 'call_status', 'call_outcome',
   'cash_collected', 'total_value', 'lead_quality', 'call_quality',
-  'recording', 'notes', 'jerry_grade', 'jerry_coaching_note',
+  'recording', 'appointment_notes', 'jerry_grade', 'jerry_coaching_note',
   // hidden by default — appear in Manage Fields but not in the table
   'ghl_id', 'appointment_id', 'date_created', 'date_in', 'calendar', 'guidance', 'avatar',
   'is_rescheduled',
@@ -744,8 +744,8 @@ export default function AppointmentsTable({ rows, onRowUpdated, onSync }: Props)
         return row.avatar
           ? <img src={row.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
           : null
-      case 'notes':
-        return <TruncCell value={row.notes ?? ''} className="text-gray-500 text-xs" />
+      case 'appointment_notes':
+        return <TruncCell value={row.appointment_notes ?? ''} className="text-gray-500 text-xs" />
       case 'jerry_grade':
         return row.jerry_grade
           ? <span className="text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">

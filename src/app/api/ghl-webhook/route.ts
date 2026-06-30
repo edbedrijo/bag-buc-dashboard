@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     call_quality:         null,
     recording:            null,
     contact_notes:        cf('Contact Notes'),
-    notes:                null,
+    appointment_notes:        null,
     guidance:             cf('Guidance') ?? str(cd.guidance),
     avatar:               cf('Avatar') ?? str(cd.avatar),
     utm_source:           str(cd.utm_source),

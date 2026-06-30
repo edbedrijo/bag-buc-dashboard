@@ -329,11 +329,11 @@
             <div class="om-section">Payment</div>
             <div class="om-field">
               <label>Cash Collected</label>
-              <input type="text" id="buc-cash-collected" placeholder="0.00" value="${prefill.cashCollected ? Number(prefill.cashCollected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" />
+              <input type="text" id="buc-cash-collected" placeholder="e.g. 5,000" value="${prefill.cashCollected ? Number(prefill.cashCollected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" />
             </div>
             <div class="om-field">
               <label>Total Value</label>
-              <input type="number" id="buc-total-value" placeholder="0.00" min="0" step="0.01" value="${prefill.totalValue || ''}" />
+              <input type="text" id="buc-total-value" placeholder="e.g. 12,500" value="${prefill.totalValue ? Number(prefill.totalValue).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : ''}" />
             </div>
 
             <div class="om-section">Quality</div>
@@ -358,8 +358,12 @@
               <input type="url" id="buc-recording" placeholder="https://..." value="${prefill.recording || ''}" />
             </div>
             <div class="om-field full">
-              <label>Notes</label>
-              <textarea id="buc-notes" placeholder="Any notes...">${prefill.notes || ''}</textarea>
+              <label>Contact Notes</label>
+              <textarea id="buc-contact-notes" placeholder="Notes from the contact...">${prefill.contactNotes || ''}</textarea>
+            </div>
+            <div class="om-field full">
+              <label>Appointment Notes</label>
+              <textarea id="buc-notes" placeholder="Notes about this call...">${prefill.notes || ''}</textarea>
             </div>
 
             <div class="om-section">Jerry Review</div>
@@ -392,11 +396,12 @@
     const fields = {
       'buc-call-status':    record.call_status || 'Scheduled',
       'buc-call-outcome':   record.call_outcome,
-      'buc-cash-collected': record.cash_collected != null ? Number(record.cash_collected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '',
-      'buc-total-value':    record.total_value    != null ? String(record.total_value)    : '',
+      'buc-cash-collected': (record.cash_collected != null && record.cash_collected !== 0) ? Number(record.cash_collected).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '',
+      'buc-total-value':    (record.total_value    != null && record.total_value    !== 0) ? Number(record.total_value).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '',
       'buc-lead-quality':   record.lead_quality,
       'buc-call-quality':   record.call_quality,
       'buc-recording':      record.recording,
+      'buc-contact-notes':  record.contact_notes,
       'buc-notes':          record.notes,
       'buc-jerry-grade':    record.jerry_grade,
       'buc-jerry-note':     record.jerry_coaching_note,
@@ -455,11 +460,15 @@
     document.getElementById('buc-close-btn').addEventListener('click', () => overlay.remove());
     document.getElementById('buc-skip-btn').addEventListener('click',  () => overlay.remove());
 
+    // call_date from Supabase — overrides callDateISO on submit to guarantee conflict key match
+    let supabaseCallDate = null;
+
     // Pre-fill from Supabase
     if (appointmentId) {
       fetchRowFromSupabase(appointmentId, contactId, callDateISO)
         .then(({ record }) => {
           if (loadingMsg) loadingMsg.remove();
+          if (record?.call_date) supabaseCallDate = record.call_date;
           applyPrefill(record);
           if (statusOverride) {
             const el = document.getElementById('buc-call-status');
@@ -479,7 +488,7 @@
       const payload = {
         appointmentId:    appointmentId || null,
         contactId,
-        callDate:         callDateISO   || null,
+        callDate:         supabaseCallDate || callDateISO || null,
         locationId:       LOCATION_ID,
         triggeredAt:      new Date().toISOString(),
         callStatus:       document.getElementById('buc-call-status').value,
@@ -487,14 +496,20 @@
         closer:           document.getElementById('buc-closer').value,
         setter:           document.getElementById('buc-setter').value,
         cashCollected:    document.getElementById('buc-cash-collected').value.replace(/,/g, ''),
-        totalValue:       document.getElementById('buc-total-value').value,
+        totalValue:       document.getElementById('buc-total-value').value.replace(/,/g, ''),
         leadQuality:      document.getElementById('buc-lead-quality').value,
         callQuality:      document.getElementById('buc-call-quality').value,
         recording:        document.getElementById('buc-recording').value,
+        contactNotes:     document.getElementById('buc-contact-notes').value,
         notes:            document.getElementById('buc-notes').value,
         jerryGrade:       document.getElementById('buc-jerry-grade').value,
         jerryCoachingNote: document.getElementById('buc-jerry-note').value,
       };
+
+      if (!payload.callStatus || payload.callStatus === 'Scheduled') {
+        const confirm = window.confirm('Call Status is still "Scheduled". Did you forget to update it before saving?');
+        if (!confirm) return;
+      }
 
       log('Sending payload:', payload);
       submitBtn.disabled = true;
@@ -521,6 +536,21 @@
         submitBtn.disabled     = false;
         submitBtn.textContent  = 'Save Outcome';
       }
+    });
+
+    // As-you-type comma formatting for monetary fields
+    ['buc-cash-collected', 'buc-total-value'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const cursorFromEnd = el.value.length - (el.selectionStart ?? el.value.length);
+        const raw = el.value.replace(/[^0-9.]/g, '');
+        const parts = raw.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        el.value = parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
+        const newPos = Math.max(0, el.value.length - cursorFromEnd);
+        el.selectionStart = el.selectionEnd = newPos;
+      });
     });
   }
 
@@ -565,11 +595,25 @@
       if ((text === 'Save' || text === 'Save Changes') && !listenedButtons.has(btn)) {
         listenedButtons.add(btn);
         btn.addEventListener('click', () => {
-          const status = consumePending();
-          if (status) {
+          const rawStatus = consumePending();
+          if (rawStatus) {
+            // Normalize GHL status values to match modal Call Status options
+            const statusMap = {
+              'showed':     'Show',
+              'show':       'Show',
+              'noshow':     'No Show',
+              'no show':    'No Show',
+              'no-show':    'No Show',
+              'cancelled':  'Canceled',
+              'canceled':   'Canceled',
+              'rescheduled':'Rescheduled',
+              'confirmed':  'Scheduled',
+              'new':        'Scheduled',
+            };
+            const status = statusMap[rawStatus.toLowerCase().trim()] || rawStatus;
             const contactId     = getContactId();
             const appointmentId = currentAppointmentId;
-            log('Status-change trigger | status:', status);
+            log('Status-change trigger | raw:', rawStatus, '| normalized:', status);
             const apptData = apptRegistry[appointmentId] || {};
             const apptSubtitle = apptData.title || apptData.calendarName || 'Appointment status updated';
             setTimeout(() => showModal(contactId, appointmentId, apptSubtitle, status), 700);

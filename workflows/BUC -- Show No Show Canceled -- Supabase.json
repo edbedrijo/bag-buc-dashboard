@@ -1,6 +1,6 @@
 {
   "_id": "buc-supabase-status-update",
-  "locationId": "n2gK5CxzjJj4tNIfcKHw",
+  "locationId": "SwbNBq7ED4YQbSmTeva8",
   "name": "BUC — Show/No Show/Canceled → Supabase",
   "status": "draft",
   "version": 1,
@@ -45,11 +45,11 @@
       "conditions": [
         { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
         { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
-        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "JnC2s3WRw8BGgRb085O0" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "v5eQj7YCUlBGOes8iStw" },
         { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
       ],
       "masterType": "highlevel",
-      "name": "Strategy Call - Show/No-Show/Cancel",
+      "name": "Test Calendar 1 - Show/No-Show/Cancel",
       "type": "appointment"
     },
     {
@@ -58,24 +58,11 @@
       "conditions": [
         { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
         { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
-        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "CAb3mcR2YELxrqa73zuD" },
+        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "VMbT3kjFSdzgXru3VvLa" },
         { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
       ],
       "masterType": "highlevel",
-      "name": "Strategy Follow Up - Show/No-Show/Cancel",
-      "type": "appointment"
-    },
-    {
-      "active": true,
-      "belongs_to": "workflow",
-      "conditions": [
-        { "field": "appointment.eventType", "operator": "==", "title": "Event Type", "type": "select", "value": "any" },
-        { "field": "appointment.status",    "operator": "is-any-of", "title": "Appointment status is", "type": "select", "value": ["showed", "noshow", "cancelled"] },
-        { "field": "calendar.id",           "operator": "==", "title": "In calendar", "type": "select", "value": "y6NZVUeeJ6vceAA1d0YL" },
-        { "field": "contactMode",           "operator": "is-any-of", "type": "input", "value": ["contact"] }
-      ],
-      "masterType": "highlevel",
-      "name": "Closer Follow Up - Show/No-Show/Cancel",
+      "name": "Test Calendar 2 - Show/No-Show/Cancel",
       "type": "appointment"
     }
   ]

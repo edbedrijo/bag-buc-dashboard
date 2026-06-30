@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
         lead_quality:        body.leadQuality    ?? null,
         call_quality:        body.callQuality    ?? null,
         recording:           body.recording      ?? null,
-        notes:               body.notes          ?? null,
+        appointment_notes:    body.notes          ?? null,
         contact_notes:       body.contactNotes   ?? null,
         jerry_grade:         body.jerryGrade     ?? null,
         jerry_coaching_note: body.jerryCoachingNote ?? null,

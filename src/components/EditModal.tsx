@@ -77,7 +77,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
     lead_quality:        row.lead_quality        ?? '',
     call_quality:        row.call_quality        ?? '',
     recording:           row.recording           ?? '',
-    notes:               row.notes               ?? '',
+    appointment_notes:   row.appointment_notes   ?? '',
     jerry_grade:         row.jerry_grade         ?? '',
     jerry_coaching_note: row.jerry_coaching_note ?? '',
   })
@@ -108,7 +108,7 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
       lead_quality:        form.lead_quality        || null,
       call_quality:        form.call_quality        || null,
       recording:           form.recording           || null,
-      notes:               form.notes               || null,
+      appointment_notes:   form.appointment_notes   || null,
       jerry_grade:         form.jerry_grade         || null,
       jerry_coaching_note: form.jerry_coaching_note || null,
     }
@@ -277,11 +277,11 @@ export default function EditModal({ row, closers, setters, onClose, onSaved }: E
             </div>
           </Field>
 
-          {/* Notes */}
-          <Field label="Notes">
+          {/* Appointment Notes */}
+          <Field label="Appointment Notes">
             <textarea
-              value={form.notes}
-              onChange={e => set('notes', e.target.value)}
+              value={form.appointment_notes}
+              onChange={e => set('appointment_notes', e.target.value)}
               rows={3}
               placeholder="Closer notes..."
               className={`${inputCls} resize-none`}
